@@ -1696,6 +1696,7 @@ version = "1.0.0"
 dependencies = [
  "anyhow",
  "hex",
+ "libc",
  "revm",
 ]
 

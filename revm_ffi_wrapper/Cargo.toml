@@ -28,6 +28,7 @@ all = "warn"
 revm = { version = "24.0.0", features = ["dev"] }
 anyhow = "1.0"
 hex = "0.4"
+libc = "0.2"
 
 [features]
 default = []

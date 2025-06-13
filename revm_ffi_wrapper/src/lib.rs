@@ -26,10 +26,12 @@ use revm::{
 mod types;
 mod utils;
 mod statedb_types;
+mod go_db;
 
 pub use types::*;
 pub use utils::*;
 pub use statedb_types::*;
+pub use go_db::*;
 
 /// Initialize a new REVM instance
 /// Returns a pointer to the EVM instance or null on failure
