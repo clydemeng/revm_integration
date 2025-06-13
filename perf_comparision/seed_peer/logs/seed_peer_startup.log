@@ -1,0 +1,342 @@
+INFO [06-12|23:15:40.304] Logging configured                       rotate=false format=terminal location=./logs/seed_peer.log
+INFO [06-12|23:15:40.311] Bumping default cache on mainnet         provided=1024 updated=4096
+INFO [06-12|23:15:40.312] Maximum peer count                       ETH=25 total=25
+ERROR[06-12|23:15:40.315] The static-nodes.json file is deprecated and ignored. Use P2P.StaticNodes in config.toml instead.
+INFO [06-12|23:15:40.317] Set global gas cap                       cap=50,000,000
+INFO [06-12|23:15:40.317] Initializing the KZG library             backend=gokzg
+INFO [06-12|23:15:40.334] Using pebble as the backing database
+INFO [06-12|23:15:40.334] Allocated cache and file handles         database=/Users/ruojunm/workspace_2025/rust/bsc-revm-integration/forked_bsc/revm_integration/perf_comparision/seed_peer/seed_peer_data/geth/chaindata cache=1.60GiB handles=5120 "memory table"=409.50MiB
+INFO [06-12|23:15:41.629] Opened ancient database                  database=/Users/ruojunm/workspace_2025/rust/bsc-revm-integration/forked_bsc/revm_integration/perf_comparision/seed_peer/seed_peer_data/geth/chaindata/ancient/chain readonly=false frozen=0
+INFO [06-12|23:15:41.637] State scheme set to already existing disk db scheme=path
+INFO [06-12|23:15:41.637] Capped dirty cache size                  provided=1024.00MiB adjusted=256.00MiB
+INFO [06-12|23:15:41.637] Clean cache size                         provided=614.00MiB  adjusted=1.35GiB
+INFO [06-12|23:15:41.637] Allocated memory caches                  state_scheme=path trie_clean_cache=1.35GiB trie_dirty_cache=256.00MiB snapshot_cache=819.00MiB
+INFO [06-12|23:15:41.637] Parlia                                   chainConfig="{ChainID: 56 Homestead: 0 DAO: <nil> DAOSupport: false EIP150: 0 EIP155: 0 EIP158: 0 Byzantium: 0 Constantinople: 0 Petersburg: 0 Istanbul: 0, Muir Glacier: 0, Ramanujan: 0, Niels: 0, MirrorSync: 5184000, Bruno: 13082000, Berlin: 31302048, YOLO v3: <nil>, CatalystBlock: <nil>, London: 31302048, ArrowGlacier: <nil>, MergeFork:<nil>, Euler: 18907621, Gibbs: 23846001, Nano: 21962149, Moran: 22107423, Planck: 27281024,Luban: 29020050, Plato: 30720096, Hertz: 31302048, Hertzfix: 34140700 ShanghaiTime: 1705996800, KeplerTime: 1705996800, FeynmanTime: 1713419340, FeynmanFixTime: 1713419340, CancunTime: 1718863500, HaberTime: 1718863500, HaberFixTime: 1727316120, BohrTime: 1727317200, PascalTime: 1742436600, PragueTime: 1742436600, LorentzTime: 1745903100, MaxwellTime: <nil>, Engine: parlia}"
+INFO [06-12|23:15:41.646] Initialising Ethereum protocol           network=56 dbversion=9
+INFO [06-12|23:15:41.647] New journal reader for journal kv
+INFO [06-12|23:15:41.649] New async node buffer                    limit=256.00MiB layers=198
+INFO [06-12|23:15:41.655] Loaded layer journal                     diskroot=919fcc..03b422 diffhead=5b39f1..ce2496 elapsed=8.528ms
+INFO [06-12|23:15:41.720] Opened ancient database                  database=/Users/ruojunm/workspace_2025/rust/bsc-revm-integration/forked_bsc/revm_integration/perf_comparision/seed_peer/seed_peer_data/geth/chaindata/ancient/state readonly=false frozen=199
+INFO [06-12|23:15:41.720] Initialized path database                cache=1.35GiB buffer=256.00MiB history=360,000
+INFO [06-12|23:15:41.720] Initialised chain configuration          config="{ChainID: 56 Homestead: 0 DAO: <nil> DAOSupport: false EIP150: 0 EIP155: 0 EIP158: 0 Byzantium: 0 Constantinople: 0 Petersburg: 0 Istanbul: 0, Muir Glacier: 0, Ramanujan: 0, Niels: 0, MirrorSync: 5184000, Bruno: 13082000, Berlin: 31302048, YOLO v3: <nil>, CatalystBlock: <nil>, London: 31302048, ArrowGlacier: <nil>, MergeFork:<nil>, Euler: 18907621, Gibbs: 23846001, Nano: 21962149, Moran: 22107423, Planck: 27281024,Luban: 29020050, Plato: 30720096, Hertz: 31302048, Hertzfix: 34140700 ShanghaiTime: 1705996800, KeplerTime: 1705996800, FeynmanTime: 1713419340, FeynmanFixTime: 1713419340, CancunTime: 1718863500, HaberTime: 1718863500, HaberFixTime: 1727316120, BohrTime: 1727317200, PascalTime: 1742436600, PragueTime: 1742436600, LorentzTime: 1745903100, MaxwellTime: <nil>, Engine: parlia}"
+INFO [06-12|23:15:41.770] Loaded most recent local block           number=114,403 hash=a7fe17..49766d root=5b39f1..ce2496 td=228,664 age=4y10mo4d
+INFO [06-12|23:15:41.770] Loaded most recent local finalized block number=0       hash=0d2184..d57b5b root=919fcc..03b422 td=1       age=5y2mo2w
+INFO [06-12|23:15:41.779] Snapshot loaded                          diskRoot=1db428..e95588 root=5b39f1..ce2496
+INFO [06-12|23:15:41.779] Initialized transaction indexer          range="last 2350000 blocks"
+INFO [06-12|23:15:41.785] Create votePool successfully
+INFO [06-12|23:15:41.785] Gasprice oracle is ignoring threshold set threshold=4
+WARN [06-12|23:15:41.785] Sanitizing invalid gasprice oracle max header history provided=0          updated=1
+WARN [06-12|23:15:41.785] Sanitizing invalid gasprice oracle max block history provided=0          updated=1
+INFO [06-12|23:15:41.791] Enabling metrics collection
+INFO [06-12|23:15:41.791] Enabling stand-alone metrics HTTP endpoint address=127.0.0.1:9046
+INFO [06-12|23:15:41.791] Starting metrics server                  addr=http://127.0.0.1:9046/debug/metrics
+INFO [06-12|23:15:41.791] Starting peer-to-peer node               instance=Geth/v1.5.13-15e1a0dc-20250612/darwin-arm64/go1.23.4
+INFO [06-12|23:15:41.847] New local node record                    seq=1,749,738,728,592 id=07ddb60c9ee7e5a8 ip=127.0.0.1 udp=30304 tcp=30304
+INFO [06-12|23:15:41.847] HTTP server started                      endpoint=127.0.0.1:8546 auth=false prefix= cors=* vhosts=localhost
+INFO [06-12|23:15:41.847] WebSocket enabled                        url=ws://127.0.0.1:9546
+INFO [06-12|23:15:41.847] Started P2P networking                   self=enode://14af4d92b88d1dc20d58d6bbb137a2314a61698cadb4fb1e967db7f5e771d6ccf0d0ede2ebddd6a3d89d9a6ba2ce12351fcaaab90cd5c9fab20b6dd783ba316f@127.0.0.1:30304
+INFO [06-12|23:15:43.426] New local node record                    seq=1,749,738,728,593 id=07ddb60c9ee7e5a8 ip=18.162.231.39 udp=30304 tcp=30304
+INFO [06-12|23:15:51.859] Block synchronisation started
+WARN [06-12|23:15:52.823] Multiple headers for single request      peer=b3179719 headers=0
+WARN [06-12|23:15:52.823] Synchronisation failed, dropping peer    peer=b31797192bd1b5ea5ec539644c46e46d4c7df53c8efe34bb15250415109af46d name=Geth/v1.5.10/linux-a... td=102,081,871 err="action from bad peer ignored: multiple headers (0) for single request"
+INFO [06-12|23:15:52.823] Looking for peers                        peercount=0 tried=65 static=0
+INFO [06-12|23:16:03.417] Looking for peers                        peercount=0 tried=23 static=0
+INFO [06-12|23:16:13.557] Looking for peers                        peercount=0 tried=10 static=0
+INFO [06-12|23:16:23.656] Looking for peers                        peercount=1 tried=39 static=0
+INFO [06-12|23:16:34.853] Looking for peers                        peercount=0 tried=19 static=0
+INFO [06-12|23:16:44.926] Looking for peers                        peercount=0 tried=36 static=0
+INFO [06-12|23:16:54.934] Looking for peers                        peercount=0 tried=29 static=0
+INFO [06-12|23:17:06.797] Looking for peers                        peercount=0 tried=31 static=0
+INFO [06-12|23:17:16.839] Looking for peers                        peercount=0 tried=28 static=0
+INFO [06-12|23:17:26.976] Looking for peers                        peercount=0 tried=54 static=0
+INFO [06-12|23:17:37.043] Looking for peers                        peercount=0 tried=37 static=0
+INFO [06-12|23:17:47.177] Looking for peers                        peercount=1 tried=35 static=0
+INFO [06-12|23:17:57.240] Looking for peers                        peercount=0 tried=30 static=0
+INFO [06-12|23:18:07.263] Looking for peers                        peercount=0 tried=28 static=0
+INFO [06-12|23:18:17.505] Looking for peers                        peercount=0 tried=33 static=0
+INFO [06-12|23:18:27.611] Looking for peers                        peercount=0 tried=45 static=0
+INFO [06-12|23:18:37.990] Looking for peers                        peercount=0 tried=38 static=0
+INFO [06-12|23:18:48.165] Looking for peers                        peercount=0 tried=18 static=0
+INFO [06-12|23:18:58.181] Looking for peers                        peercount=1 tried=28 static=0
+INFO [06-12|23:19:08.227] Looking for peers                        peercount=0 tried=56 static=0
+INFO [06-12|23:19:18.388] Looking for peers                        peercount=0 tried=13 static=0
+WARN [06-12|23:19:24.765] Multiple headers for single request      peer=b3750086 headers=0
+WARN [06-12|23:19:24.767] Synchronisation failed, dropping peer    peer=b3750086a960bbd7cd0089c71d7df62228e26598c53650a15d62ebe3275d823a name=Geth/v1.4.15-eb76865... td=94,657,602  err="action from bad peer ignored: multiple headers (0) for single request"
+INFO [06-12|23:19:28.499] Looking for peers                        peercount=0 tried=48 static=0
+INFO [06-12|23:19:38.522] Looking for peers                        peercount=0 tried=43 static=0
+INFO [06-12|23:19:48.554] Looking for peers                        peercount=0 tried=7  static=0
+WARN [06-12|23:19:56.579] Multiple headers for single request      peer=ed4be585 headers=0
+WARN [06-12|23:19:56.580] Synchronisation failed, dropping peer    peer=ed4be58533ce7bb22f0bb1da69d494d31ed5de6a8667d69eb7792ffbcdfb47ec name=Geth/v1.5.12-d60167c... td=102,082,201 err="action from bad peer ignored: multiple headers (0) for single request"
+INFO [06-12|23:19:58.778] Looking for peers                        peercount=0 tried=30 static=0
+INFO [06-12|23:20:08.953] Looking for peers                        peercount=0 tried=12 static=0
+INFO [06-12|23:20:19.033] Looking for peers                        peercount=0 tried=14 static=0
+WARN [06-12|23:20:24.116] Multiple headers for single request      peer=a0b1369d headers=0
+WARN [06-12|23:20:24.116] Synchronisation failed, dropping peer    peer=a0b1369dd7374c44125288f9318c3312396f1d3c4891b6a85f25c512d9a054da name=Geth/v1.5.12-94e8217... td=102,082,241 err="action from bad peer ignored: multiple headers (0) for single request"
+INFO [06-12|23:20:29.059] Looking for peers                        peercount=1 tried=62 static=0
+WARN [06-12|23:20:35.007] Multiple headers for single request      peer=27e9729d headers=0
+WARN [06-12|23:20:35.008] Synchronisation failed, dropping peer    peer=27e9729d3ca1f1cf59bb97b2c5d61dee72b9f327ac94460824693a32a3a3ae79 name=Geth/v1.5.12-e26e2cb... td=102,082,245 err="action from bad peer ignored: multiple headers (0) for single request"
+INFO [06-12|23:20:39.461] Looking for peers                        peercount=1 tried=8  static=0
+INFO [06-12|23:20:49.557] Looking for peers                        peercount=1 tried=31 static=0
+INFO [06-12|23:20:59.559] Looking for peers                        peercount=0 tried=39 static=0
+INFO [06-12|23:21:09.708] Looking for peers                        peercount=0 tried=7  static=0
+WARN [06-12|23:21:15.944] Multiple headers for single request      peer=f5240769 headers=0
+WARN [06-12|23:21:15.944] Synchronisation failed, dropping peer    peer=f524076970972e1f1324675c7fa7aca1827bcb8e65b929a50911e666b6f7293e name=Geth/v1.5.12-d60167c... td=102,082,307 err="action from bad peer ignored: multiple headers (0) for single request"
+INFO [06-12|23:21:20.201] Looking for peers                        peercount=2 tried=35 static=0
+INFO [06-12|23:21:30.275] Looking for peers                        peercount=2 tried=47 static=0
+INFO [06-12|23:21:37.445] Imported new chain segment               number=114,595 hash=3bb0c5..a74a68 miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=192 txs=0 blobs=0 mgas=0.000 elapsed=2.760s  mgasps=0.000 age=4y10mo4d snapdiffs=107.46KiB triediffs=620.96KiB triedirty=116.81KiB trieimutabledirty=0.00B
+INFO [06-12|23:21:40.665] Looking for peers                        peercount=2 tried=14 static=0
+INFO [06-12|23:21:45.453] Imported new chain segment               number=115,183 hash=f66e32..a4eccb miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=588 txs=3 blobs=0 mgas=0.055 elapsed=8.001s  mgasps=0.007 age=4y10mo4d snapdiffs=107.87KiB triediffs=621.61KiB triedirty=118.35KiB trieimutabledirty=0.00B
+INFO [06-12|23:21:53.455] Imported new chain segment               number=115,683 hash=7d4b7d..509087 miner=0xB8f7166496996A7da21cF1f1b04d9B3E26a3d077 blocks=500 txs=12 blobs=0 mgas=1.086 elapsed=8.002s  mgasps=0.136 age=4y10mo4d snapdiffs=111.20KiB triediffs=647.00KiB triedirty=120.72KiB trieimutabledirty=0.00B
+INFO [06-12|23:21:54.368] Imported new chain segment               number=115,747 hash=59d8ab..4baff8 miner=0xc2Be4EC20253B8642161bC3f444F53679c1F3D47 blocks=64  txs=0  blobs=0 mgas=0.000 elapsed=912.879ms mgasps=0.000 age=4y10mo4d snapdiffs=111.20KiB triediffs=647.00KiB triedirty=120.72KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:02.386] Imported new chain segment               number=116,354 hash=eb875c..236b3e miner=0x9ef9f4360c606c7AB4db26b016007d3ad0aB86a0 blocks=607 txs=7  blobs=0 mgas=0.501 elapsed=8.010s    mgasps=0.063 age=4y10mo4d snapdiffs=112.94KiB triediffs=658.96KiB triedirty=120.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:10.396] Imported new chain segment               number=116,890 hash=4d8618..2fd45b miner=0x35E7a025f4da968De7e4D7E4004197917F4070F1 blocks=536 txs=0  blobs=0 mgas=0.000 elapsed=8.010s    mgasps=0.000 age=4y10mo4d snapdiffs=112.94KiB triediffs=658.96KiB triedirty=120.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:18.400] Imported new chain segment               number=117,515 hash=35a0f0..e0c8cb miner=0xEe01C3b1283AA067C58eaB4709F85e99D46de5FE blocks=625 txs=0  blobs=0 mgas=0.000 elapsed=8.004s    mgasps=0.000 age=4y10mo4d snapdiffs=112.94KiB triediffs=658.96KiB triedirty=120.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:22.642] Imported new chain segment               number=117,795 hash=e27e54..56ba02 miner=0x6488Aa4D1955Ee33403f8ccB1d4dE5Fb97C7ade2 blocks=280 txs=0  blobs=0 mgas=0.000 elapsed=4.241s    mgasps=0.000 age=4y10mo4d snapdiffs=112.94KiB triediffs=658.96KiB triedirty=120.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:30.656] Imported new chain segment               number=118,367 hash=6ccf15..bf92d9 miner=0x7AE2F5B9e386cd1B50A4550696D957cB4900f03a blocks=572 txs=3  blobs=0 mgas=0.040 elapsed=8.006s    mgasps=0.005 age=4y10mo4d snapdiffs=113.36KiB triediffs=660.16KiB triedirty=121.06KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:38.659] Imported new chain segment               number=118,996 hash=ea29c6..faea59 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=629 txs=0  blobs=0 mgas=0.000 elapsed=8.003s    mgasps=0.000 age=4y10mo4d snapdiffs=113.36KiB triediffs=660.16KiB triedirty=121.06KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:46.659] Imported new chain segment               number=119,603 hash=55bb4a..b85499 miner=0x68Bf0B8b6FB4E317a0f9D6F03eAF8CE6675BC60D blocks=607 txs=12 blobs=0 mgas=0.686 elapsed=8.000s    mgasps=0.086 age=4y10mo4d snapdiffs=115.80KiB triediffs=674.56KiB triedirty=121.97KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:50.207] Imported new chain segment               number=119,843 hash=2786d9..3e2abb miner=0xce2FD7544e0B2Cc94692d4A704deBEf7bcB61328 blocks=240 txs=4  blobs=0 mgas=0.427 elapsed=3.547s    mgasps=0.120 age=4y10mo4d snapdiffs=117.10KiB triediffs=684.49KiB triedirty=123.11KiB trieimutabledirty=0.00B
+INFO [06-12|23:22:58.221] Imported new chain segment               number=120,371 hash=352ef4..eefd69 miner=0xEe01C3b1283AA067C58eaB4709F85e99D46de5FE blocks=528 txs=6  blobs=0 mgas=0.109 elapsed=8.000s    mgasps=0.014 age=4y10mo4d snapdiffs=117.85KiB triediffs=685.82KiB triedirty=123.19KiB trieimutabledirty=0.00B
+WARN [06-12|23:23:02.365] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=810
+INFO [06-12|23:23:06.236] Imported new chain segment               number=120,928 hash=6f14cc..f712f2 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=557 txs=6  blobs=0 mgas=0.692 elapsed=8.014s    mgasps=0.086 age=4y10mo4d snapdiffs=119.41KiB triediffs=700.02KiB triedirty=123.19KiB trieimutabledirty=0.00B
+INFO [06-12|23:23:14.239] Imported new chain segment               number=121,450 hash=ce7eee..8d65c9 miner=0x685B1ded8013785d6623CC18D214320b6Bb64759 blocks=522 txs=0  blobs=0 mgas=0.000 elapsed=8.002s    mgasps=0.000 age=4y10mo4d snapdiffs=119.41KiB triediffs=700.02KiB triedirty=123.19KiB trieimutabledirty=0.00B
+WARN [06-12|23:23:16.941] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=597
+INFO [06-12|23:23:21.377] Imported new chain segment               number=121,891 hash=47b819..a9cebf miner=0x685B1ded8013785d6623CC18D214320b6Bb64759 blocks=441 txs=0  blobs=0 mgas=0.000 elapsed=7.137s    mgasps=0.000 age=4y10mo4d snapdiffs=119.41KiB triediffs=700.02KiB triedirty=123.19KiB trieimutabledirty=0.00B
+INFO [06-12|23:23:29.405] Imported new chain segment               number=122,389 hash=8a0d78..9d3aee miner=0x2a7cdd959bFe8D9487B2a43B33565295a698F7e2 blocks=498 txs=0  blobs=0 mgas=0.000 elapsed=8.010s    mgasps=0.000 age=4y10mo4d snapdiffs=119.41KiB triediffs=700.02KiB triedirty=123.19KiB trieimutabledirty=0.00B
+WARN [06-12|23:23:32.835] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=1044
+INFO [06-12|23:23:37.419] Imported new chain segment               number=122,922 hash=486851..838b2f miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=533 txs=6  blobs=0 mgas=0.121 elapsed=8.012s    mgasps=0.015 age=4y10mo4d snapdiffs=120.33KiB triediffs=703.71KiB triedirty=123.68KiB trieimutabledirty=0.00B
+INFO [06-12|23:23:45.423] Imported new chain segment               number=123,436 hash=82cd11..c2997f miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=514 txs=33 blobs=0 mgas=0.769 elapsed=8.005s    mgasps=0.096 age=4y10mo4d snapdiffs=125.92KiB triediffs=723.67KiB triedirty=128.76KiB trieimutabledirty=0.00B
+WARN [06-12|23:23:46.975] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=614
+INFO [06-12|23:23:53.430] Imported new chain segment               number=123,939 hash=782555..b5e107 miner=0xd6caA02BBebaEbB5d7e581e4B66559e635F805fF blocks=503 txs=22 blobs=0 mgas=1.556 elapsed=8.006s    mgasps=0.194 age=4y10mo4d snapdiffs=130.56KiB triediffs=744.60KiB triedirty=131.14KiB trieimutabledirty=0.00B
+INFO [06-12|23:24:01.451] Imported new chain segment               number=124,514 hash=885d9e..9db2e4 miner=0x4430b3230294D12c6AB2aAC5C2cd68E80B16b581 blocks=575 txs=45 blobs=0 mgas=4.299 elapsed=8.009s    mgasps=0.537 age=4y10mo4d snapdiffs=141.93KiB triediffs=795.94KiB triedirty=134.06KiB trieimutabledirty=0.00B
+INFO [06-12|23:24:09.459] Imported new chain segment               number=125,047 hash=7d75f7..3caca0 miner=0x8c4D90829CE8F72D0163c1D5Cf348a862d550630 blocks=533 txs=3  blobs=0 mgas=0.040 elapsed=8.007s    mgasps=0.005 age=4y10mo4d snapdiffs=142.34KiB triediffs=794.37KiB triedirty=134.97KiB trieimutabledirty=0.00B
+INFO [06-12|23:24:17.470] Imported new chain segment               number=125,579 hash=d49a06..917f7f miner=0xEe01C3b1283AA067C58eaB4709F85e99D46de5FE blocks=532 txs=18 blobs=0 mgas=2.219 elapsed=8.011s    mgasps=0.277 age=4y10mo4d snapdiffs=147.14KiB triediffs=820.62KiB triedirty=136.98KiB trieimutabledirty=0.00B
+WARN [06-12|23:24:18.349] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=1299
+INFO [06-12|23:24:24.102] Imported new chain segment               number=125,987 hash=69f996..67b634 miner=0x68Bf0B8b6FB4E317a0f9D6F03eAF8CE6675BC60D blocks=408 txs=6  blobs=0 mgas=0.101 elapsed=6.631s    mgasps=0.015 age=4y10mo4d snapdiffs=148.16KiB triediffs=818.68KiB triedirty=138.21KiB trieimutabledirty=0.00B
+INFO [06-12|23:24:32.131] Imported new chain segment               number=126,489 hash=232598..e2ef06 miner=0x6488Aa4D1955Ee33403f8ccB1d4dE5Fb97C7ade2 blocks=502 txs=10 blobs=0 mgas=1.051 elapsed=8.013s    mgasps=0.131 age=4y10mo4d snapdiffs=151.02KiB triediffs=836.08KiB triedirty=139.20KiB trieimutabledirty=0.00B
+WARN [06-12|23:24:33.182] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=1215
+INFO [06-12|23:24:40.142] Imported new chain segment               number=126,995 hash=641790..a7f3df miner=0x68Bf0B8b6FB4E317a0f9D6F03eAF8CE6675BC60D blocks=506 txs=28 blobs=0 mgas=2.121 elapsed=8.010s    mgasps=0.265 age=4y10mo4d snapdiffs=157.48KiB triediffs=864.21KiB triedirty=144.00KiB trieimutabledirty=0.00B
+INFO [06-12|23:24:48.150] Imported new chain segment               number=127,518 hash=4e18a2..b9209c miner=0x6488Aa4D1955Ee33403f8ccB1d4dE5Fb97C7ade2 blocks=523 txs=6  blobs=0 mgas=5.737 elapsed=8.007s    mgasps=0.716 age=4y10mo4d snapdiffs=159.13KiB triediffs=872.06KiB triedirty=144.00KiB trieimutabledirty=0.00B
+INFO [06-12|23:24:55.818] Imported new chain segment               number=128,035 hash=7960b5..5249b0 miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=517 txs=15 blobs=0 mgas=0.784 elapsed=7.667s    mgasps=0.102 age=4y10mo4d snapdiffs=161.94KiB triediffs=883.22KiB triedirty=145.10KiB trieimutabledirty=0.00B
+WARN [06-12|23:25:02.413] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=830
+INFO [06-12|23:25:03.831] Imported new chain segment               number=128,580 hash=bcc819..20778f miner=0xd6caA02BBebaEbB5d7e581e4B66559e635F805fF blocks=545 txs=16 blobs=0 mgas=0.613 elapsed=8.001s    mgasps=0.077 age=4y10mo4d snapdiffs=165.18KiB triediffs=900.15KiB triedirty=146.17KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:11.845] Imported new chain segment               number=129,084 hash=198edd..9bdf36 miner=0xd6caA02BBebaEbB5d7e581e4B66559e635F805fF blocks=504 txs=66 blobs=0 mgas=4.026 elapsed=8.014s    mgasps=0.502 age=4y10mo4d snapdiffs=180.04KiB triediffs=979.21KiB triedirty=152.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:19.850] Imported new chain segment               number=129,618 hash=1d84a8..f0b395 miner=0x6488Aa4D1955Ee33403f8ccB1d4dE5Fb97C7ade2 blocks=534 txs=19 blobs=0 mgas=12.939 elapsed=8.004s    mgasps=1.616 age=4y10mo3d snapdiffs=184.92KiB triediffs=988.15KiB triedirty=156.32KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:27.298] Imported new chain segment               number=130,083 hash=180747..7518ed miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=465 txs=12 blobs=0 mgas=1.817  elapsed=7.447s    mgasps=0.244 age=4y10mo3d snapdiffs=187.29KiB triediffs=976.87KiB triedirty=160.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:35.315] Imported new chain segment               number=130,545 hash=0458b7..cbe34b miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=462 txs=6  blobs=0 mgas=0.200  elapsed=8.006s    mgasps=0.025 age=4y10mo3d snapdiffs=188.47KiB triediffs=968.29KiB triedirty=162.37KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:43.331] Imported new chain segment               number=131,100 hash=b85d12..48ab6d miner=0xd6caA02BBebaEbB5d7e581e4B66559e635F805fF blocks=555 txs=0  blobs=0 mgas=0.000  elapsed=8.015s    mgasps=0.000 age=4y10mo3d snapdiffs=188.47KiB triediffs=968.29KiB triedirty=162.37KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:51.335] Imported new chain segment               number=131,715 hash=ab7bee..8ff6c0 miner=0x2f7bE8361C80A4c1e7e9aAF001d0877F1CFdE218 blocks=615 txs=0  blobs=0 mgas=0.000  elapsed=8.004s    mgasps=0.000 age=4y10mo3d snapdiffs=188.47KiB triediffs=968.29KiB triedirty=162.37KiB trieimutabledirty=0.00B
+INFO [06-12|23:25:57.096] Imported new chain segment               number=132,131 hash=91df2e..bbb1ac miner=0xEe01C3b1283AA067C58eaB4709F85e99D46de5FE blocks=416 txs=0  blobs=0 mgas=0.000  elapsed=5.761s    mgasps=0.000 age=4y10mo3d snapdiffs=188.47KiB triediffs=968.29KiB triedirty=162.37KiB trieimutabledirty=0.00B
+INFO [06-12|23:26:05.127] Imported new chain segment               number=132,751 hash=1b680d..240235 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=620 txs=0  blobs=0 mgas=0.000  elapsed=8.008s    mgasps=0.000 age=4y10mo3d snapdiffs=188.47KiB triediffs=968.29KiB triedirty=162.37KiB trieimutabledirty=0.00B
+WARN [06-12|23:26:07.509] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=3372
+INFO [06-12|23:26:13.136] Imported new chain segment               number=133,374 hash=6f51eb..63c4b4 miner=0x2f7bE8361C80A4c1e7e9aAF001d0877F1CFdE218 blocks=623 txs=3  blobs=0 mgas=0.070  elapsed=8.008s    mgasps=0.009 age=4y10mo3d snapdiffs=189.03KiB triediffs=966.48KiB triedirty=163.37KiB trieimutabledirty=0.00B
+WARN [06-12|23:26:21.063] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=2649
+INFO [06-12|23:26:21.152] Imported new chain segment               number=133,973 hash=dc6929..1ba81e miner=0x9ef9f4360c606c7AB4db26b016007d3ad0aB86a0 blocks=599 txs=3  blobs=0 mgas=0.040  elapsed=8.016s    mgasps=0.005 age=4y10mo3d snapdiffs=189.44KiB triediffs=966.37KiB triedirty=163.36KiB trieimutabledirty=0.00B
+INFO [06-12|23:26:24.028] Imported new chain segment               number=134,179 hash=1a2fdf..5c7824 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=206 txs=0  blobs=0 mgas=0.000  elapsed=2.875s    mgasps=0.000 age=4y10mo3d snapdiffs=189.44KiB triediffs=966.37KiB triedirty=163.36KiB trieimutabledirty=0.00B
+INFO [06-12|23:26:32.040] Imported new chain segment               number=134,726 hash=cd38eb..33bf8d miner=0x7AE2F5B9e386cd1B50A4550696D957cB4900f03a blocks=547 txs=0  blobs=0 mgas=0.000  elapsed=8.000s    mgasps=0.000 age=4y10mo3d snapdiffs=189.44KiB triediffs=966.37KiB triedirty=163.36KiB trieimutabledirty=0.00B
+WARN [06-12|23:26:37.217] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=3225
+INFO [06-12|23:26:40.044] Imported new chain segment               number=135,214 hash=5f3c97..96f4d1 miner=0xc2Be4EC20253B8642161bC3f444F53679c1F3D47 blocks=488 txs=0  blobs=0 mgas=0.000  elapsed=8.003s    mgasps=0.000 age=4y10mo3d snapdiffs=189.44KiB triediffs=966.37KiB triedirty=163.36KiB trieimutabledirty=0.00B
+INFO [06-12|23:26:48.046] Imported new chain segment               number=135,693 hash=aaf45d..a9642d miner=0x82012708DAfC9E1B880fd083B32182B869bE8E09 blocks=479 txs=3  blobs=0 mgas=0.070  elapsed=8.001s    mgasps=0.009 age=4y10mo3d snapdiffs=189.99KiB triediffs=959.93KiB triedirty=165.37KiB trieimutabledirty=0.00B
+INFO [06-12|23:26:56.063] Imported new chain segment               number=136,160 hash=d0149a..48a87b miner=0xce2FD7544e0B2Cc94692d4A704deBEf7bcB61328 blocks=467 txs=0  blobs=0 mgas=0.000  elapsed=8.016s    mgasps=0.000 age=4y10mo3d snapdiffs=189.99KiB triediffs=959.93KiB triedirty=165.37KiB trieimutabledirty=0.00B
+INFO [06-12|23:26:57.170] Imported new chain segment               number=136,227 hash=97776e..4bbc3e miner=0x22B81f8E175FFde54d797FE11eB03F9E3BF75F1d blocks=67  txs=0  blobs=0 mgas=0.000  elapsed=1.107s    mgasps=0.000 age=4y10mo3d snapdiffs=189.99KiB triediffs=959.93KiB triedirty=165.37KiB trieimutabledirty=0.00B
+WARN [06-12|23:26:57.650] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=5940
+WARN [06-12|23:27:03.700] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=1465
+INFO [06-12|23:27:05.189] Imported new chain segment               number=136,708 hash=199336..f4a447 miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=481 txs=11 blobs=0 mgas=0.749  elapsed=8.000s    mgasps=0.094 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+WARN [06-12|23:27:08.393] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=3811
+INFO [06-12|23:27:13.194] Imported new chain segment               number=137,187 hash=9e91d2..129df9 miner=0xB8f7166496996A7da21cF1f1b04d9B3E26a3d077 blocks=479 txs=0  blobs=0 mgas=0.000  elapsed=8.004s    mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:27:21.202] Imported new chain segment               number=137,683 hash=77cdd0..17d0c0 miner=0x685B1ded8013785d6623CC18D214320b6Bb64759 blocks=496 txs=0  blobs=0 mgas=0.000  elapsed=8.008s    mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:27:29.216] Imported new chain segment               number=138,210 hash=1f5a9b..74d369 miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=527 txs=0  blobs=0 mgas=0.000  elapsed=8.013s    mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:27:30.178] Imported new chain segment               number=138,275 hash=490d25..1fbdf7 miner=0x7AE2F5B9e386cd1B50A4550696D957cB4900f03a blocks=65  txs=0  blobs=0 mgas=0.000  elapsed=962.195ms mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:27:38.197] Imported new chain segment               number=138,744 hash=0a293b..412692 miner=0xd6caA02BBebaEbB5d7e581e4B66559e635F805fF blocks=469 txs=0  blobs=0 mgas=0.000  elapsed=8.010s    mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:27:46.213] Imported new chain segment               number=139,205 hash=7cfbbd..be6b47 miner=0xce2FD7544e0B2Cc94692d4A704deBEf7bcB61328 blocks=461 txs=0  blobs=0 mgas=0.000  elapsed=8.016s    mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+WARN [06-12|23:27:48.579] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=1396
+INFO [06-12|23:27:54.226] Imported new chain segment               number=139,679 hash=91b86f..a985d9 miner=0x68Bf0B8b6FB4E317a0f9D6F03eAF8CE6675BC60D blocks=474 txs=0  blobs=0 mgas=0.000  elapsed=8.012s    mgasps=0.000 age=4y10mo3d snapdiffs=192.45KiB triediffs=975.91KiB triedirty=166.47KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:02.230] Imported new chain segment               number=140,133 hash=ca86ef..495cab miner=0x22B81f8E175FFde54d797FE11eB03F9E3BF75F1d blocks=454 txs=4  blobs=0 mgas=1.697  elapsed=8.004s    mgasps=0.212 age=4y10mo3d snapdiffs=199.13KiB triediffs=1020.83KiB triedirty=166.57KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:05.242] Imported new chain segment               number=140,323 hash=c81a16..028a1e miner=0x2a7cdd959bFe8D9487B2a43B33565295a698F7e2 blocks=190 txs=0  blobs=0 mgas=0.000  elapsed=3.012s    mgasps=0.000 age=4y10mo3d snapdiffs=199.13KiB triediffs=1020.83KiB triedirty=166.57KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:13.276] Imported new chain segment               number=140,743 hash=fa982e..e66722 miner=0x2a7cdd959bFe8D9487B2a43B33565295a698F7e2 blocks=420 txs=0  blobs=0 mgas=0.000  elapsed=8.015s    mgasps=0.000 age=4y10mo3d snapdiffs=199.13KiB triediffs=1020.83KiB triedirty=166.57KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:21.293] Imported new chain segment               number=141,219 hash=ca8521..6ad1ef miner=0xB8f7166496996A7da21cF1f1b04d9B3E26a3d077 blocks=476 txs=4  blobs=0 mgas=0.403  elapsed=8.016s    mgasps=0.050 age=4y10mo3d snapdiffs=200.43KiB triediffs=1.01MiB    triedirty=166.73KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:29.295] Imported new chain segment               number=141,655 hash=512c65..80b2d6 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=436 txs=0  blobs=0 mgas=0.000  elapsed=8.001s    mgasps=0.000 age=4y10mo3d snapdiffs=200.43KiB triediffs=1.01MiB    triedirty=166.73KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:37.297] Imported new chain segment               number=142,130 hash=7677f3..c34ce0 miner=0x2D4C407BBe49438ED859fe965b140dcF1aaB71a9 blocks=475 txs=0  blobs=0 mgas=0.000  elapsed=8.001s    mgasps=0.000 age=4y10mo3d snapdiffs=200.43KiB triediffs=1.01MiB    triedirty=166.73KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:41.554] Imported new chain segment               number=142,371 hash=0f235f..8f882d miner=0x82012708DAfC9E1B880fd083B32182B869bE8E09 blocks=241 txs=0  blobs=0 mgas=0.000  elapsed=4.256s    mgasps=0.000 age=4y10mo3d snapdiffs=200.43KiB triediffs=1.01MiB    triedirty=166.73KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:49.569] Imported new chain segment               number=142,857 hash=e5c354..590219 miner=0xB8f7166496996A7da21cF1f1b04d9B3E26a3d077 blocks=486 txs=0  blobs=0 mgas=0.000  elapsed=8.002s    mgasps=0.000 age=4y10mo3d snapdiffs=200.43KiB triediffs=1.01MiB    triedirty=166.73KiB trieimutabledirty=0.00B
+INFO [06-12|23:28:57.582] Imported new chain segment               number=143,337 hash=1d9256..0f1d7e miner=0x82012708DAfC9E1B880fd083B32182B869bE8E09 blocks=480 txs=4  blobs=0 mgas=0.402  elapsed=8.012s    mgasps=0.050 age=4y10mo3d snapdiffs=201.73KiB triediffs=1.02MiB    triedirty=166.91KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:05.590] Imported new chain segment               number=143,745 hash=c32e80..d0478b miner=0x22B81f8E175FFde54d797FE11eB03F9E3BF75F1d blocks=408 txs=0  blobs=0 mgas=0.000  elapsed=8.008s    mgasps=0.000 age=4y10mo3d snapdiffs=201.73KiB triediffs=1.02MiB    triedirty=166.91KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:13.601] Imported new chain segment               number=144,220 hash=6629ba..d1dcd3 miner=0x8c4D90829CE8F72D0163c1D5Cf348a862d550630 blocks=475 txs=10 blobs=0 mgas=0.567  elapsed=8.011s    mgasps=0.071 age=4y10mo3d snapdiffs=204.12KiB triediffs=1.03MiB    triedirty=169.83KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:16.814] Imported new chain segment               number=144,419 hash=fe538a..61fb52 miner=0x2D4C407BBe49438ED859fe965b140dcF1aaB71a9 blocks=199 txs=9  blobs=0 mgas=0.230  elapsed=3.212s    mgasps=0.071 age=4y10mo3d snapdiffs=205.90KiB triediffs=1.04MiB    triedirty=170.81KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:24.830] Imported new chain segment               number=144,864 hash=b4f4ea..3b6702 miner=0x6488Aa4D1955Ee33403f8ccB1d4dE5Fb97C7ade2 blocks=445 txs=9  blobs=0 mgas=0.204  elapsed=8.005s    mgasps=0.026 age=4y10mo3d snapdiffs=207.41KiB triediffs=1.03MiB    triedirty=175.63KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:32.836] Imported new chain segment               number=145,312 hash=45c957..9680f2 miner=0x8c4D90829CE8F72D0163c1D5Cf348a862d550630 blocks=448 txs=4  blobs=0 mgas=0.413  elapsed=8.006s    mgasps=0.052 age=4y10mo3d snapdiffs=208.71KiB triediffs=1.04MiB    triedirty=175.82KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:40.844] Imported new chain segment               number=145,787 hash=e4bb5a..ff408d miner=0x4430b3230294D12c6AB2aAC5C2cd68E80B16b581 blocks=475 txs=4  blobs=0 mgas=0.387  elapsed=8.008s    mgasps=0.048 age=4y10mo3d snapdiffs=210.01KiB triediffs=1.04MiB    triedirty=175.08KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:48.848] Imported new chain segment               number=146,286 hash=ae2c25..d2c4fe miner=0x22B81f8E175FFde54d797FE11eB03F9E3BF75F1d blocks=499 txs=0  blobs=0 mgas=0.000  elapsed=8.003s    mgasps=0.000 age=4y10mo3d snapdiffs=210.01KiB triediffs=1.04MiB    triedirty=175.08KiB trieimutabledirty=0.00B
+INFO [06-12|23:29:52.760] Imported new chain segment               number=146,467 hash=b05b81..9d171f miner=0x8c4D90829CE8F72D0163c1D5Cf348a862d550630 blocks=181 txs=0  blobs=0 mgas=0.000  elapsed=3.911s    mgasps=0.000 age=4y10mo3d snapdiffs=210.01KiB triediffs=1.04MiB    triedirty=175.08KiB trieimutabledirty=0.00B
+INFO [06-12|23:30:00.811] Imported new chain segment               number=146,903 hash=d5c97f..33d02a miner=0x68Bf0B8b6FB4E317a0f9D6F03eAF8CE6675BC60D blocks=436 txs=0  blobs=0 mgas=0.000  elapsed=8.004s    mgasps=0.000 age=4y10mo3d snapdiffs=210.01KiB triediffs=1.04MiB    triedirty=175.08KiB trieimutabledirty=0.00B
+INFO [06-12|23:30:08.820] Imported new chain segment               number=147,365 hash=d2d52c..3d3240 miner=0x68Bf0B8b6FB4E317a0f9D6F03eAF8CE6675BC60D blocks=462 txs=0  blobs=0 mgas=0.000  elapsed=8.009s    mgasps=0.000 age=4y10mo3d snapdiffs=210.01KiB triediffs=1.04MiB    triedirty=175.08KiB trieimutabledirty=0.00B
+INFO [06-12|23:30:16.842] Imported new chain segment               number=147,829 hash=11b415..d68596 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=464 txs=18 blobs=0 mgas=0.894  elapsed=8.021s    mgasps=0.112 age=4y10mo3d snapdiffs=213.38KiB triediffs=1.04MiB    triedirty=177.86KiB trieimutabledirty=0.00B
+INFO [06-12|23:30:24.859] Imported new chain segment               number=148,254 hash=028c5b..a8daf6 miner=0xB8f7166496996A7da21cF1f1b04d9B3E26a3d077 blocks=425 txs=21 blobs=0 mgas=1.301  elapsed=8.016s    mgasps=0.162 age=4y10mo3d snapdiffs=218.29KiB triediffs=1.04MiB    triedirty=181.48KiB trieimutabledirty=0.00B
+INFO [06-12|23:30:29.681] Imported new chain segment               number=148,515 hash=5abd44..93e299 miner=0x2f7bE8361C80A4c1e7e9aAF001d0877F1CFdE218 blocks=261 txs=0  blobs=0 mgas=0.000  elapsed=4.821s    mgasps=0.000 age=4y10mo3d snapdiffs=218.29KiB triediffs=1.04MiB    triedirty=181.48KiB trieimutabledirty=0.00B
+WARN [06-12|23:30:32.107] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=656
+INFO [06-12|23:30:37.707] Imported new chain segment               number=148,855 hash=35c50d..59f782 miner=0x685B1ded8013785d6623CC18D214320b6Bb64759 blocks=340 txs=6  blobs=0 mgas=0.079  elapsed=8.013s    mgasps=0.010 age=4y10mo3d snapdiffs=219.12KiB triediffs=1.03MiB    triedirty=182.71KiB trieimutabledirty=0.00B
+INFO [06-12|23:30:45.708] Imported new chain segment               number=149,293 hash=86574a..c2bec0 miner=0x35E7a025f4da968De7e4D7E4004197917F4070F1 blocks=438 txs=27 blobs=0 mgas=2.182  elapsed=8.000s    mgasps=0.273 age=4y10mo3d snapdiffs=225.19KiB triediffs=1.05MiB    triedirty=186.11KiB trieimutabledirty=0.00B
+WARN [06-12|23:30:47.192] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=698
+INFO [06-12|23:30:53.713] Imported new chain segment               number=149,760 hash=d94b92..b89d6e miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=467 txs=9  blobs=0 mgas=0.281  elapsed=8.005s    mgasps=0.035 age=4y10mo3d snapdiffs=227.28KiB triediffs=1.05MiB    triedirty=186.68KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:01.728] Imported new chain segment               number=150,225 hash=f1872d..9c8a50 miner=0x82012708DAfC9E1B880fd083B32182B869bE8E09 blocks=465 txs=14 blobs=0 mgas=0.787  elapsed=8.014s    mgasps=0.098 age=4y10mo3d snapdiffs=230.34KiB triediffs=1.06MiB    triedirty=187.62KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:07.646] Imported new chain segment               number=150,563 hash=a5a013..a2f9b0 miner=0x9ef9f4360c606c7AB4db26b016007d3ad0aB86a0 blocks=338 txs=6  blobs=0 mgas=0.708  elapsed=5.917s    mgasps=0.120 age=4y10mo3d snapdiffs=232.04KiB triediffs=1.08MiB    triedirty=187.78KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:15.665] Imported new chain segment               number=151,011 hash=eed5ab..a7e7d5 miner=0x22B81f8E175FFde54d797FE11eB03F9E3BF75F1d blocks=448 txs=17 blobs=0 mgas=0.852  elapsed=8.001s    mgasps=0.106 age=4y10mo3d snapdiffs=235.90KiB triediffs=1.07MiB    triedirty=191.81KiB trieimutabledirty=0.00B
+WARN [06-12|23:31:16.852] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=525
+INFO [06-12|23:31:23.687] Imported new chain segment               number=151,447 hash=e37d0f..fa70c9 miner=0xc2Be4EC20253B8642161bC3f444F53679c1F3D47 blocks=436 txs=3  blobs=0 mgas=0.070  elapsed=8.021s    mgasps=0.009 age=4y10mo3d snapdiffs=236.46KiB triediffs=1.07MiB    triedirty=192.07KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:31.689] Imported new chain segment               number=151,939 hash=a2cf99..722d3e miner=0x35E7a025f4da968De7e4D7E4004197917F4070F1 blocks=492 txs=24 blobs=0 mgas=0.332  elapsed=8.001s    mgasps=0.042 age=4y10mo3d snapdiffs=239.80KiB triediffs=1.05MiB    triedirty=198.69KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:39.701] Imported new chain segment               number=152,388 hash=fceae7..670649 miner=0x82012708DAfC9E1B880fd083B32182B869bE8E09 blocks=449 txs=44 blobs=0 mgas=2.204  elapsed=8.012s    mgasps=0.275 age=4y10mo3d snapdiffs=249.52KiB triediffs=1.04MiB    triedirty=206.86KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:43.502] Imported new chain segment               number=152,611 hash=4b1fb5..8b9ee6 miner=0x35E7a025f4da968De7e4D7E4004197917F4070F1 blocks=223 txs=39 blobs=0 mgas=3.180  elapsed=3.801s    mgasps=0.836 age=4y10mo3d snapdiffs=258.73KiB triediffs=1.05MiB    triedirty=214.66KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:51.522] Imported new chain segment               number=153,067 hash=93664e..69b203 miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=456 txs=9  blobs=0 mgas=1.467  elapsed=8.001s    mgasps=0.183 age=4y10mo3d snapdiffs=260.71KiB triediffs=1.04MiB    triedirty=219.25KiB trieimutabledirty=0.00B
+INFO [06-12|23:31:59.525] Imported new chain segment               number=153,511 hash=2e95b1..02efcb miner=0x2a7cdd959bFe8D9487B2a43B33565295a698F7e2 blocks=444 txs=10 blobs=0 mgas=1.037  elapsed=8.002s    mgasps=0.130 age=4y10mo3d snapdiffs=263.20KiB triediffs=1.04MiB    triedirty=221.50KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:07.535] Imported new chain segment               number=153,940 hash=31b720..9746c9 miner=0x78f3aDfC719C99674c072166708589033e2d9afe blocks=429 txs=34 blobs=0 mgas=2.878  elapsed=8.009s    mgasps=0.359 age=4y10mo3d snapdiffs=271.81KiB triediffs=1.08MiB    triedirty=224.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:15.557] Imported new chain segment               number=154,401 hash=2ae470..72bcc3 miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=461 txs=0  blobs=0 mgas=0.000  elapsed=8.022s    mgasps=0.000 age=4y10mo3d snapdiffs=271.81KiB triediffs=1.08MiB    triedirty=224.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:20.158] Imported new chain segment               number=154,659 hash=aa9586..85fcd5 miner=0xB8f7166496996A7da21cF1f1b04d9B3E26a3d077 blocks=258 txs=0  blobs=0 mgas=0.000  elapsed=4.600s    mgasps=0.000 age=4y10mo3d snapdiffs=271.81KiB triediffs=1.08MiB    triedirty=224.93KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:28.191] Imported new chain segment               number=155,073 hash=e39f07..b89865 miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=414 txs=15 blobs=0 mgas=0.772  elapsed=8.015s    mgasps=0.096 age=4y10mo3d snapdiffs=274.07KiB triediffs=1.05MiB    triedirty=229.54KiB trieimutabledirty=0.00B
+WARN [06-12|23:32:33.144] find a too slow peer                     id=a22cf3751c2bf59b peer=172.111.38.48:30311 latency=1170
+INFO [06-12|23:32:36.201] Imported new chain segment               number=155,459 hash=3afece..1ee854 miner=0xce2FD7544e0B2Cc94692d4A704deBEf7bcB61328 blocks=386 txs=17 blobs=0 mgas=0.807  elapsed=8.008s    mgasps=0.101 age=4y10mo3d snapdiffs=277.36KiB triediffs=1.06MiB    triedirty=229.51KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:44.203] Imported new chain segment               number=155,897 hash=a42b2f..66a7a8 miner=0x9ef9f4360c606c7AB4db26b016007d3ad0aB86a0 blocks=438 txs=46 blobs=0 mgas=2.346  elapsed=8.004s    mgasps=0.293 age=4y10mo3d snapdiffs=284.80KiB triediffs=1.03MiB    triedirty=242.41KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:52.201] Imported new chain segment               number=156,326 hash=122338..ba4e7a miner=0x2D4C407BBe49438ED859fe965b140dcF1aaB71a9 blocks=429 txs=161 blobs=0 mgas=12.837 elapsed=8.004s    mgasps=1.604 age=4y10mo3d snapdiffs=322.25KiB triediffs=1.01MiB    triedirty=262.24KiB trieimutabledirty=0.00B
+INFO [06-12|23:32:59.084] Imported new chain segment               number=156,707 hash=7a5447..8d56d1 miner=0x4430b3230294D12c6AB2aAC5C2cd68E80B16b581 blocks=381 txs=172 blobs=0 mgas=12.970 elapsed=6.886s    mgasps=1.884 age=4y10mo3d snapdiffs=365.71KiB triediffs=1.17MiB    triedirty=286.28KiB trieimutabledirty=0.00B
+INFO [06-12|23:33:07.099] Imported new chain segment               number=157,149 hash=871418..c3758e miner=0x6488Aa4D1955Ee33403f8ccB1d4dE5Fb97C7ade2 blocks=442 txs=212 blobs=0 mgas=13.816 elapsed=8.001s    mgasps=1.727 age=4y10mo3d snapdiffs=419.79KiB triediffs=1.50MiB    triedirty=325.23KiB trieimutabledirty=0.00B
+INFO [06-12|23:33:15.107] Imported new chain segment               number=157,570 hash=f1b358..43a46c miner=0x685B1ded8013785d6623CC18D214320b6Bb64759 blocks=421 txs=195 blobs=0 mgas=13.396 elapsed=8.008s    mgasps=1.673 age=4y10mo3d snapdiffs=470.21KiB triediffs=1.71MiB    triedirty=409.18KiB trieimutabledirty=0.00B
+INFO [06-12|23:33:23.118] Imported new chain segment               number=158,002 hash=4c5186..a275d3 miner=0xea0A6E3c511bbD10f4519EcE37Dc24887e11b55d blocks=432 txs=199 blobs=0 mgas=12.679 elapsed=8.012s    mgasps=1.582 age=4y10mo3d snapdiffs=521.30KiB triediffs=1.76MiB    triedirty=517.11KiB trieimutabledirty=0.00B
+INFO [06-12|23:33:31.125] Imported new chain segment               number=158,349 hash=10a5ca..84d6b0 miner=0x6BBad7Cf34b5fA511d8e963dbba288B1960E75D6 blocks=347 txs=146 blobs=0 mgas=9.545  elapsed=8.006s    mgasps=1.192 age=4y10mo3d snapdiffs=558.82KiB triediffs=1.80MiB    triedirty=588.97KiB trieimutabledirty=0.00B
+INFO [06-12|23:33:31.931] Got interrupt, shutting down...
+INFO [06-12|23:33:31.934] HTTP server stopped                      endpoint=127.0.0.1:8546
+INFO [06-12|23:33:31.934] HTTP server stopped                      endpoint=127.0.0.1:9546
+WARN [06-12|23:33:31.947] Synchronisation failed, retrying         peer=a22cf3751c2bf59b0df6565a0e0c05e304b10c19b0c6e206851717cc8fcfe58e err="content processing canceled (requested)"
+INFO [06-12|23:33:31.947] Ethereum protocol stopped
+INFO [06-12|23:33:31.947] Transaction pool stopped
+INFO [06-12|23:33:32.093] Persisting dirty state to disk           head=158,390 root=f92426..9269a8 layers=861
+INFO [06-12|23:33:32.098] New journal writer for journal kv
+INFO [06-12|23:33:32.104] Journaled pathdb disk layer              root=849e2b..eb7687
+INFO [06-12|23:33:32.105] Journaled pathdb diff layer              root=1e0366..02a3c2 parent=849e2b..eb7687 id=735              block=157,341
+INFO [06-12|23:33:32.105] Journaled pathdb diff layer              root=84c009..fcbdbb parent=1e0366..02a3c2 id=736              block=157,353
+INFO [06-12|23:33:32.105] Journaled pathdb diff layer              root=69eb14..b3a0d8 parent=84c009..fcbdbb id=737              block=157,359
+INFO [06-12|23:33:32.105] Journaled pathdb diff layer              root=801cd2..e6937c parent=69eb14..b3a0d8 id=738              block=157,365
+INFO [06-12|23:33:32.105] Journaled pathdb diff layer              root=251503..4abab1 parent=801cd2..e6937c id=739              block=157,369
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=e63149..7bac9e parent=251503..4abab1 id=740              block=157,375
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=eb5c2a..360430 parent=e63149..7bac9e id=741              block=157,387
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=addc51..c6dfff parent=eb5c2a..360430 id=742              block=157,388
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=dba1f7..15eb95 parent=addc51..c6dfff id=743              block=157,389
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=c9922c..0f61a3 parent=dba1f7..15eb95 id=744              block=157,390
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=2d881a..d4c486 parent=c9922c..0f61a3 id=745              block=157,399
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=add0f7..56c9c9 parent=2d881a..d4c486 id=746              block=157,403
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=63a951..746608 parent=add0f7..56c9c9 id=747              block=157,418
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=6b3f82..f56340 parent=63a951..746608 id=748              block=157,428
+INFO [06-12|23:33:32.106] Journaled pathdb diff layer              root=226c89..b891cf parent=6b3f82..f56340 id=749              block=157,442
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=35c357..e023ff parent=226c89..b891cf id=750              block=157,443
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=0f652b..ac462c parent=35c357..e023ff id=751              block=157,446
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=fde6fe..b5cd6a parent=0f652b..ac462c id=752              block=157,449
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=ec7668..032bd1 parent=fde6fe..b5cd6a id=753              block=157,456
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=d264e9..399dff parent=ec7668..032bd1 id=754              block=157,459
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=91fbbc..6d57ed parent=d264e9..399dff id=755              block=157,467
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=6e88ed..160d4b parent=91fbbc..6d57ed id=756              block=157,493
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=cd5c0d..a37748 parent=6e88ed..160d4b id=757              block=157,504
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=fb22ed..7c5d12 parent=cd5c0d..a37748 id=758              block=157,509
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=64371f..6d27e1 parent=fb22ed..7c5d12 id=759              block=157,525
+INFO [06-12|23:33:32.107] Journaled pathdb diff layer              root=186bc6..959a9e parent=64371f..6d27e1 id=760              block=157,540
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=6f0ed0..f7ae76 parent=186bc6..959a9e id=761              block=157,569
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=76e52b..e1a138 parent=6f0ed0..f7ae76 id=762              block=157,579
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=a0baeb..a9c805 parent=76e52b..e1a138 id=763              block=157,591
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=48603a..984bbc parent=a0baeb..a9c805 id=764              block=157,602
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=451602..d13c65 parent=48603a..984bbc id=765              block=157,612
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=920dad..53bdf8 parent=451602..d13c65 id=766              block=157,629
+INFO [06-12|23:33:32.108] Journaled pathdb diff layer              root=545dc6..c645e8 parent=920dad..53bdf8 id=767              block=157,630
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=639f13..2dcf03 parent=545dc6..c645e8 id=768              block=157,661
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=7efdfc..ead465 parent=639f13..2dcf03 id=769              block=157,662
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=e8492c..1f85f5 parent=7efdfc..ead465 id=770              block=157,668
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=080e72..56ed9a parent=e8492c..1f85f5 id=771              block=157,689
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=960135..2c814a parent=080e72..56ed9a id=772              block=157,705
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=dfe15c..1bb5b5 parent=960135..2c814a id=773              block=157,706
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=74b433..e9377e parent=dfe15c..1bb5b5 id=774              block=157,711
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=f7bc95..61f6d6 parent=74b433..e9377e id=775              block=157,725
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=788a16..1c881f parent=f7bc95..61f6d6 id=776              block=157,729
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=cc41ab..76de2d parent=788a16..1c881f id=777              block=157,739
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=7e7b9c..051ba8 parent=cc41ab..76de2d id=778              block=157,742
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=ff6735..6af181 parent=7e7b9c..051ba8 id=779              block=157,743
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=af0ecd..72d011 parent=ff6735..6af181 id=780              block=157,747
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=bd283f..e48109 parent=af0ecd..72d011 id=781              block=157,748
+INFO [06-12|23:33:32.109] Journaled pathdb diff layer              root=e53d6d..f6bdc3 parent=bd283f..e48109 id=782              block=157,749
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=c6a8fc..f6bd04 parent=e53d6d..f6bdc3 id=783              block=157,764
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=f69178..4c5d6b parent=c6a8fc..f6bd04 id=784              block=157,773
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=ec794a..136278 parent=f69178..4c5d6b id=785              block=157,809
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=971a6a..af9103 parent=ec794a..136278 id=786              block=157,810
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=007628..134567 parent=971a6a..af9103 id=787              block=157,821
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=e860dd..f4dcf6 parent=007628..134567 id=788              block=157,832
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=fb4efd..856325 parent=e860dd..f4dcf6 id=789              block=157,838
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=c8989d..ec25f4 parent=fb4efd..856325 id=790              block=157,842
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=3976cd..a48880 parent=c8989d..ec25f4 id=791              block=157,847
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=98fccb..38aec6 parent=3976cd..a48880 id=792              block=157,848
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=1e178e..4a38a2 parent=98fccb..38aec6 id=793              block=157,865
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=3841bd..7b3e30 parent=1e178e..4a38a2 id=794              block=157,866
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=8db49b..dc29be parent=3841bd..7b3e30 id=795              block=157,869
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=b49eae..2f1ce4 parent=8db49b..dc29be id=796              block=157,870
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=b8f60e..5a8805 parent=b49eae..2f1ce4 id=797              block=157,882
+INFO [06-12|23:33:32.110] Journaled pathdb diff layer              root=8ebfa4..1e2ae8 parent=b8f60e..5a8805 id=798              block=157,883
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=9c088f..fb12f5 parent=8ebfa4..1e2ae8 id=799              block=157,896
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=d19962..dd04f8 parent=9c088f..fb12f5 id=800              block=157,901
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=a72c5a..270b1d parent=d19962..dd04f8 id=801              block=157,918
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=7c53a4..d1ad7b parent=a72c5a..270b1d id=802              block=157,919
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=112ba7..621e71 parent=7c53a4..d1ad7b id=803              block=157,925
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=ca7b16..337963 parent=112ba7..621e71 id=804              block=157,929
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=71591a..94e5ac parent=ca7b16..337963 id=805              block=157,930
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=ba1dbc..7bcf8b parent=71591a..94e5ac id=806              block=157,939
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=9fa070..635eb1 parent=ba1dbc..7bcf8b id=807              block=157,943
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=9bcf5c..7b672a parent=9fa070..635eb1 id=808              block=157,953
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=86eeba..3475e7 parent=9bcf5c..7b672a id=809              block=157,954
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=96a0f7..46f052 parent=86eeba..3475e7 id=810              block=157,973
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=e24028..ab31cd parent=96a0f7..46f052 id=811              block=157,979
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=aefa34..326e0c parent=e24028..ab31cd id=812              block=157,983
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=bf76c3..fc2f8c parent=aefa34..326e0c id=813              block=157,984
+INFO [06-12|23:33:32.111] Journaled pathdb diff layer              root=222108..3bea4c parent=bf76c3..fc2f8c id=814              block=157,989
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=4e649a..823b82 parent=222108..3bea4c id=815              block=157,996
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=04a6a1..709103 parent=4e649a..823b82 id=816              block=158,000
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=81dd3d..86d1fd parent=04a6a1..709103 id=817              block=158,001
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=e68c67..8abce6 parent=81dd3d..86d1fd id=818              block=158,011
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=c87428..48011f parent=e68c67..8abce6 id=819              block=158,019
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=91f4ee..dcc863 parent=c87428..48011f id=820              block=158,036
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=4dd056..15f8bb parent=91f4ee..dcc863 id=821              block=158,037
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=79ac8d..33efc6 parent=4dd056..15f8bb id=822              block=158,040
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=a46b9b..667f02 parent=79ac8d..33efc6 id=823              block=158,043
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=932f78..a6f8cb parent=a46b9b..667f02 id=824              block=158,049
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=f16eff..0202a5 parent=932f78..a6f8cb id=825              block=158,050
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=c9117a..087661 parent=f16eff..0202a5 id=826              block=158,057
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=74f506..6e6d3e parent=c9117a..087661 id=827              block=158,075
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=12e784..fe8e40 parent=74f506..6e6d3e id=828              block=158,080
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=17040c..53e077 parent=12e784..fe8e40 id=829              block=158,089
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=4feb61..79b1cd parent=17040c..53e077 id=830              block=158,095
+INFO [06-12|23:33:32.112] Journaled pathdb diff layer              root=34b8ac..372821 parent=4feb61..79b1cd id=831              block=158,104
+INFO [06-12|23:33:32.113] Journaled pathdb diff layer              root=c73de2..e30d19 parent=34b8ac..372821 id=832              block=158,109
+INFO [06-12|23:33:32.113] Journaled pathdb diff layer              root=ac86cc..c8d1f3 parent=c73de2..e30d19 id=833              block=158,113
+INFO [06-12|23:33:32.113] Journaled pathdb diff layer              root=d91ed5..e6821c parent=ac86cc..c8d1f3 id=834              block=158,114
+INFO [06-12|23:33:32.113] Journaled pathdb diff layer              root=bc77d3..3af144 parent=d91ed5..e6821c id=835              block=158,127
+INFO [06-12|23:33:32.113] Journaled pathdb diff layer              root=52b0f4..7c2c61 parent=bc77d3..3af144 id=836              block=158,132
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=648849..5d88cc parent=52b0f4..7c2c61 id=837              block=158,136
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=04fe9e..28ad6f parent=648849..5d88cc id=838              block=158,169
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=f52517..9f837e parent=04fe9e..28ad6f id=839              block=158,170
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=0e19a5..98dc24 parent=f52517..9f837e id=840              block=158,183
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=7ef871..a8273a parent=0e19a5..98dc24 id=841              block=158,203
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=c71a2a..f289f3 parent=7ef871..a8273a id=842              block=158,208
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=7e9236..f46ec9 parent=c71a2a..f289f3 id=843              block=158,209
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=500cff..b16da8 parent=7e9236..f46ec9 id=844              block=158,220
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=32b747..29853e parent=500cff..b16da8 id=845              block=158,229
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=a4dbda..539993 parent=32b747..29853e id=846              block=158,230
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=9addd3..b63ac7 parent=a4dbda..539993 id=847              block=158,244
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=aa08a7..0a7c17 parent=9addd3..b63ac7 id=848              block=158,250
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=b252f8..33f418 parent=aa08a7..0a7c17 id=849              block=158,267
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=368fce..bb369c parent=b252f8..33f418 id=850              block=158,283
+INFO [06-12|23:33:32.114] Journaled pathdb diff layer              root=76050b..a4e73e parent=368fce..bb369c id=851              block=158,289
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=797115..6e67fc parent=76050b..a4e73e id=852              block=158,290
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=67377e..24242e parent=797115..6e67fc id=853              block=158,298
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=03b4f1..d88c3a parent=67377e..24242e id=854              block=158,308
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=b52c77..237abe parent=03b4f1..d88c3a id=855              block=158,330
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=57db64..2a870c parent=b52c77..237abe id=856              block=158,331
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=10d7e8..a3d36e parent=57db64..2a870c id=857              block=158,349
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=b61903..88476a parent=10d7e8..a3d36e id=858              block=158,350
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=823ea5..7c7d3e parent=b61903..88476a id=859              block=158,352
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=8e93b2..cb33ad parent=823ea5..7c7d3e id=860              block=158,356
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=cb1390..a71699 parent=8e93b2..cb33ad id=861              block=158,385
+INFO [06-12|23:33:32.115] Journaled pathdb diff layer              root=f92426..9269a8 parent=cb1390..a71699 id=862              block=158,390
+INFO [06-12|23:33:32.115] Persisted dirty state to disk            size=2.08MiB elapsed=22.270ms
+INFO [06-12|23:33:32.197] Blockchain stopped

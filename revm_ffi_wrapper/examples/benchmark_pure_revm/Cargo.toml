@@ -1,0 +1,15 @@
+[package]
+name = "benchmark_pure_revm"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[[bin]]
+name = "benchmark"
+path = "src/main.rs"
+
+[dependencies]
+revm = { path = "../../../revm" }
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] } 
