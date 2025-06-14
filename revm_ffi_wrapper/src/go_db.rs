@@ -140,8 +140,12 @@ impl DatabaseRef for GoDatabase {
                 &mut ptr as *mut _,
                 &mut len as *mut _,
             );
+            if ret == 1 {
+                // not found; return empty bytecode
+                return Ok(Bytecode::new());
+            }
             if ret != 0 {
-                return Err(GoDBError("re_state_code failed or not found".into()));
+                return Err(GoDBError("re_state_code failed".into()));
             }
             if len == 0 || ptr.is_null() {
                 return Ok(Bytecode::new());

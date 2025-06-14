@@ -202,6 +202,7 @@ pub unsafe extern "C" fn revm_execute(instance: *mut RevmInstance) -> *mut Execu
             Box::into_raw(Box::new(ffi_result))
         }
         Err(e) => {
+            eprintln!("[Rust] evm.replay error: {}", e);
             instance.last_error = Some(format!("Execution failed: {:?}", e));
             ptr::null_mut()
         }
@@ -223,6 +224,7 @@ pub unsafe extern "C" fn revm_execute_commit(instance: *mut RevmInstance) -> *mu
             Box::into_raw(Box::new(ffi_result))
         }
         Err(e) => {
+            eprintln!("[Rust] evm.replay_commit error: {}", e);
             instance.last_error = Some(format!("Execution failed: {:?}", e));
             ptr::null_mut()
         }
@@ -499,6 +501,7 @@ pub unsafe extern "C" fn revm_call_contract(
     match call_contract_impl(instance_ref, from, to, data, data_len, value, gas_limit) {
         Ok(result) => Box::into_raw(Box::new(result)),
         Err(e) => {
+            eprintln!("[Rust] call_contract error: {}", e);
             instance_ref.last_error = Some(e.to_string());
             std::ptr::null_mut()
         }
@@ -524,6 +527,7 @@ pub unsafe extern "C" fn revm_view_call_contract(
     match view_call_contract_impl(instance_ref, from, to, data, data_len, gas_limit) {
         Ok(result) => Box::into_raw(Box::new(result)),
         Err(e) => {
+            eprintln!("[Rust] view_call_contract error: {}", e);
             instance_ref.last_error = Some(e.to_string());
             std::ptr::null_mut()
         }
@@ -644,6 +648,7 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     gas_limit: u64,
 ) -> *mut ExecutionResultFFI {
     use crate::utils::{c_str_to_string, hex_to_address, hex_to_u256, convert_execution_result};
+    use std::io::Write;
 
     if instance.is_null() {
         return std::ptr::null_mut();
@@ -651,6 +656,9 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
 
     let inst = &mut *instance;
     let evm = &mut inst.evm;
+
+    println!("[Rust] revm_call_contract_statedb invoked, instance={:p}", instance);
+    std::io::stdout().flush().ok();
 
     // Begin translating C inputs.
     let from_addr = match c_str_to_string(from).and_then(|s| hex_to_address(&s)) {
@@ -706,7 +714,7 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
         tx.value = value_u256;
         tx.data = call_data;
         tx.gas_limit = gas_limit;
-        tx.gas_price = 1_000_000_000u128; // 1 gwei placeholder
+        tx.gas_price = 0u128; // view call: no gas price
         tx.nonce = current_nonce;
         tx.chain_id = Some(chain_id);
     });
@@ -714,6 +722,7 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     match evm.replay() {
         Ok(res) => Box::into_raw(Box::new(convert_execution_result(res.result))),
         Err(e) => {
+            eprintln!("[Rust] evm.replay error: {}", e);
             inst.last_error = Some(e.to_string());
             std::ptr::null_mut()
         }
