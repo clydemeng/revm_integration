@@ -27,6 +27,12 @@ use revm::context_interface::context::ContextTr;
 use revm::context_interface::journaled_state::JournalTr;
 use revm::database_interface::Database;
 
+// Additional primitives needed by generic helpers
+use revm::primitives::{TxKind, U256, Bytes};
+use std::slice;
+use anyhow::Result;
+use revm::handler::EvmTr;
+
 mod types;
 mod utils;
 mod statedb_types;
@@ -637,41 +643,81 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     value: *const c_char,
     gas_limit: u64,
 ) -> *mut ExecutionResultFFI {
+    use crate::utils::{c_str_to_string, hex_to_address, hex_to_u256, convert_execution_result};
+
     if instance.is_null() {
         return std::ptr::null_mut();
     }
-    let inst_ref = &mut *instance;
-    match call_contract_impl_core(&mut inst_ref.evm, from, to, data, data_len, value, gas_limit) {
-        Ok(res) => Box::into_raw(Box::new(res)),
+
+    let inst = &mut *instance;
+    let evm = &mut inst.evm;
+
+    // Begin translating C inputs.
+    let from_addr = match c_str_to_string(from).and_then(|s| hex_to_address(&s)) {
+        Ok(addr) => addr,
         Err(e) => {
-            inst_ref.last_error = Some(e.to_string());
+            inst.last_error = Some(e.to_string());
+            return std::ptr::null_mut();
+        }
+    };
+    let to_addr = match c_str_to_string(to).and_then(|s| hex_to_address(&s)) {
+        Ok(addr) => addr,
+        Err(e) => {
+            inst.last_error = Some(e.to_string());
+            return std::ptr::null_mut();
+        }
+    };
+
+    let value_u256 = if value.is_null() {
+        U256::ZERO
+    } else {
+        match c_str_to_string(value).and_then(|s| hex_to_u256(&s)) {
+            Ok(v) => v,
+            Err(e) => {
+                inst.last_error = Some(e.to_string());
+                return std::ptr::null_mut();
+            }
+        }
+    };
+
+    let call_data = if data.is_null() || data_len == 0 {
+        Bytes::new()
+    } else {
+        let slice = std::slice::from_raw_parts(data, data_len as usize);
+        Bytes::copy_from_slice(slice)
+    };
+
+    // Chain ID from cfg env
+    let chain_id = evm.ctx().cfg.chain_id;
+
+    // Determine nonce
+    let current_nonce = match evm.ctx().journal().db().basic(from_addr) {
+        Ok(opt) => opt.map(|acc| acc.nonce).unwrap_or(0),
+        Err(e) => {
+            inst.last_error = Some(e.to_string());
+            return std::ptr::null_mut();
+        }
+    };
+
+    // Populate TX env via modify_tx
+    evm.ctx().modify_tx(|tx| {
+        tx.caller = from_addr;
+        tx.kind = TxKind::Call(to_addr);
+        tx.value = value_u256;
+        tx.data = call_data;
+        tx.gas_limit = gas_limit;
+        tx.gas_price = 1_000_000_000u128; // 1 gwei placeholder
+        tx.nonce = current_nonce;
+        tx.chain_id = Some(chain_id);
+    });
+
+    match evm.replay() {
+        Ok(res) => Box::into_raw(Box::new(convert_execution_result(res.result))),
+        Err(e) => {
+            inst.last_error = Some(e.to_string());
             std::ptr::null_mut()
         }
     }
-}
-
-// Core helper to share between both instance kinds.
-fn call_contract_impl_core<E>(
-    evm: &mut E,
-    from: *const c_char,
-    to: *const c_char,
-    data: *const u8,
-    data_len: c_uint,
-    value: *const c_char,
-    gas_limit: u64,
-) -> anyhow::Result<ExecutionResultFFI>
-where
-    E: ExecuteCommitEvm + ExecuteEvm + revm::handler::EvmTr,
-{
-    // Build temporary RevmInstance wrapper to reuse utils implementation
-    let mut dummy = RevmInstance {
-        evm: unsafe { std::ptr::read(evm as *mut _ as *mut _) },
-        last_error: None,
-    };
-    let res = unsafe { call_contract_impl(&mut dummy, from, to, data, data_len, value, gas_limit) };
-    // write back evm (since read copied)
-    unsafe { std::ptr::write(evm as *mut _ as *mut _, dummy.evm) };
-    res
 }
 
 // ---------------------------------------------------------------------------
