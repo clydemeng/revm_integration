@@ -14,6 +14,10 @@ use revm::state::AccountInfo;
 use std::ffi::c_void;
 use std::ptr;
 use std::{error::Error, fmt};
+use core::sync::atomic::{AtomicUsize, Ordering};
+
+#[cfg(test)]
+pub static TEST_LAST_HANDLE: AtomicUsize = AtomicUsize::new(0);
 
 /// Type alias for the error we bubble up.  We keep it simple for now – every
 /// failure returns a descriptive string.
@@ -212,8 +216,6 @@ impl Database for GoDatabase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use core::sync::atomic::{AtomicUsize, Ordering};
-
     static CALLS_BASIC: AtomicUsize = AtomicUsize::new(0);
 
     // --- Mock implementations ---
@@ -230,6 +232,10 @@ mod tests {
                 code_hash: FFIHash { bytes: [0u8; 32] },
             };
             *out_info = info;
+        }
+        #[cfg(test)]
+        {
+            TEST_LAST_HANDLE.store(_handle, Ordering::SeqCst);
         }
         CALLS_BASIC.fetch_add(1, Ordering::SeqCst);
         0

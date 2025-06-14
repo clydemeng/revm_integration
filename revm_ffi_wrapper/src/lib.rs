@@ -23,6 +23,10 @@ use revm::{
     ExecuteCommitEvm, ExecuteEvm, MainBuilder,
 };
 
+use revm::context_interface::context::ContextTr;
+use revm::context_interface::journaled_state::JournalTr;
+use revm::database_interface::Database;
+
 mod types;
 mod utils;
 mod statedb_types;
@@ -517,5 +521,197 @@ pub unsafe extern "C" fn revm_view_call_contract(
             instance_ref.last_error = Some(e.to_string());
             std::ptr::null_mut()
         }
+    }
+}
+
+/// REVM instance backed by an external StateDB provided from Go (or other) side.
+///
+/// This is identical to `RevmInstance` except that its internal database is a
+/// `CacheDB<GoDatabase>` instead of the default in-memory `EmptyDB`.
+#[repr(C)]
+pub struct RevmInstanceStateDB {
+    pub evm: MainnetEvm<
+        revm::Context<
+            revm::context::BlockEnv,
+            revm::context::TxEnv,
+            revm::context::CfgEnv,
+            CacheDB<GoDatabase>,
+            revm::Journal<CacheDB<GoDatabase>>,
+            (),
+        >,
+    >,
+    pub last_error: Option<String>,
+}
+
+/// Create a new REVM instance that sources all state via the given external
+/// database handle (`handle`).  The Go side is expected to expose the four
+/// `re_state_*` callbacks so that `GoDatabase` can service REVM look-ups.
+#[no_mangle]
+pub extern "C" fn revm_new_with_statedb(
+    handle: usize,
+    config: *const RevmConfigFFI,
+) -> *mut RevmInstanceStateDB {
+    // Obtain configuration (by value) – fallback to defaults if caller passed NULL.
+    let cfg_val: RevmConfigFFI = if config.is_null() {
+        RevmConfigFFI::default()
+    } else {
+        unsafe { std::ptr::read(config) }
+    };
+
+    // Map spec_id (u8) to the enum expected by REVM.
+    let spec_id = match cfg_val.spec_id {
+        0 => SpecId::FRONTIER,
+        1 => SpecId::FRONTIER_THAWING,
+        2 => SpecId::HOMESTEAD,
+        3 => SpecId::DAO_FORK,
+        4 => SpecId::TANGERINE,
+        5 => SpecId::SPURIOUS_DRAGON,
+        6 => SpecId::BYZANTIUM,
+        7 => SpecId::CONSTANTINOPLE,
+        8 => SpecId::PETERSBURG,
+        9 => SpecId::ISTANBUL,
+        10 => SpecId::MUIR_GLACIER,
+        11 => SpecId::BERLIN,
+        12 => SpecId::LONDON,
+        13 => SpecId::ARROW_GLACIER,
+        14 => SpecId::GRAY_GLACIER,
+        15 => SpecId::MERGE,
+        16 => SpecId::SHANGHAI,
+        17 => SpecId::CANCUN,
+        18 => SpecId::CANCUN,
+        19 => SpecId::PRAGUE,
+        20 => SpecId::OSAKA,
+        _ => SpecId::PRAGUE,
+    };
+
+    // Build configuration environment.
+    let mut cfg_env = CfgEnv::new_with_spec(spec_id);
+    cfg_env.chain_id = cfg_val.chain_id;
+    cfg_env.disable_nonce_check = cfg_val.disable_nonce_check;
+
+    #[cfg(feature = "optional_balance_check")]
+    {
+        cfg_env.disable_balance_check = cfg_val.disable_balance_check;
+    }
+    #[cfg(feature = "optional_block_gas_limit")]
+    {
+        cfg_env.disable_block_gas_limit = cfg_val.disable_block_gas_limit;
+    }
+    #[cfg(feature = "optional_no_base_fee")]
+    {
+        cfg_env.disable_base_fee = cfg_val.disable_base_fee;
+    }
+
+    if cfg_val.max_code_size > 0 {
+        cfg_env.limit_contract_code_size = Some(cfg_val.max_code_size as usize);
+    }
+
+    // Hook up the external database via `GoDatabase`.
+    let external_db = GoDatabase::new(handle);
+    let cache_db = CacheDB::new(external_db);
+    let context = Context::new(cache_db, spec_id).with_cfg(cfg_env);
+    let evm = context.build_mainnet();
+
+    Box::into_raw(Box::new(RevmInstanceStateDB {
+        evm,
+        last_error: None,
+    }))
+}
+
+/// Free a `RevmInstanceStateDB` instance
+#[no_mangle]
+pub unsafe extern "C" fn revm_free_statedb_instance(instance: *mut RevmInstanceStateDB) {
+    if !instance.is_null() {
+        let _ = Box::from_raw(instance);
+    }
+}
+
+/// Call a contract via StateDB-backed instance
+#[no_mangle]
+pub unsafe extern "C" fn revm_call_contract_statedb(
+    instance: *mut RevmInstanceStateDB,
+    from: *const c_char,
+    to: *const c_char,
+    data: *const u8,
+    data_len: c_uint,
+    value: *const c_char,
+    gas_limit: u64,
+) -> *mut ExecutionResultFFI {
+    if instance.is_null() {
+        return std::ptr::null_mut();
+    }
+    let inst_ref = &mut *instance;
+    match call_contract_impl_core(&mut inst_ref.evm, from, to, data, data_len, value, gas_limit) {
+        Ok(res) => Box::into_raw(Box::new(res)),
+        Err(e) => {
+            inst_ref.last_error = Some(e.to_string());
+            std::ptr::null_mut()
+        }
+    }
+}
+
+// Core helper to share between both instance kinds.
+fn call_contract_impl_core<E>(
+    evm: &mut E,
+    from: *const c_char,
+    to: *const c_char,
+    data: *const u8,
+    data_len: c_uint,
+    value: *const c_char,
+    gas_limit: u64,
+) -> anyhow::Result<ExecutionResultFFI>
+where
+    E: ExecuteCommitEvm + ExecuteEvm + revm::handler::EvmTr,
+{
+    // Build temporary RevmInstance wrapper to reuse utils implementation
+    let mut dummy = RevmInstance {
+        evm: unsafe { std::ptr::read(evm as *mut _ as *mut _) },
+        last_error: None,
+    };
+    let res = unsafe { call_contract_impl(&mut dummy, from, to, data, data_len, value, gas_limit) };
+    // write back evm (since read copied)
+    unsafe { std::ptr::write(evm as *mut _ as *mut _, dummy.evm) };
+    res
+}
+
+// ---------------------------------------------------------------------------
+//  Tests – ensure the constructor works and produces a usable instance.
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod statedb_constructor_tests {
+    use super::*;
+    use revm::handler::EvmTr;
+    use revm::primitives::Address;
+    use super::go_db::TEST_LAST_HANDLE;
+
+    #[test]
+    fn test_revm_new_with_statedb_returns_instance() {
+        let cfg = RevmConfigFFI::default();
+        let inst_ptr = unsafe { revm_new_with_statedb(12345, &cfg) };
+        assert!(!inst_ptr.is_null(), "Instance pointer should not be null");
+
+        // Basic sanity: ensure we can query the DB which will trigger the mocked
+        // `re_state_basic` callback defined in `go_db::tests` (already linked).
+        unsafe {
+            let instance = &mut *inst_ptr;
+            let account_opt = instance
+                .evm
+                .ctx()
+                .journal()
+                .db()
+                .basic(Address::ZERO)
+                .expect("db access ok");
+
+            // The mock sets nonce = 42, balance = 0
+            let info = account_opt.expect("account must exist");
+            assert_eq!(info.nonce, 42);
+        }
+
+        // Clean up
+        unsafe { revm_free_statedb_instance(inst_ptr) };
+
+        // Check handle value
+        assert_eq!(TEST_LAST_HANDLE.load(std::sync::atomic::Ordering::SeqCst), 12345);
     }
 } 

@@ -134,6 +134,30 @@ void revm_free_string(char* str);
 // Error handling
 const char* revm_get_last_error(RevmInstance* instance);
 
+// ---------------------------------------------------------------------------
+// StateDB-backed REVM instance (Phase-3 integration)
+// ---------------------------------------------------------------------------
+
+// Forward declaration – opaque pointer type returned to callers
+typedef struct RevmInstanceStateDB RevmInstanceStateDB;
+
+// Create an EVM that sources state from an external database identified by
+// `handle` (opaque pointer/usize provided by the Go side).
+RevmInstanceStateDB* revm_new_with_statedb(size_t handle, const RevmConfigFFI* config);
+
+// Destroy a StateDB-backed instance created with `revm_new_with_statedb`.
+void revm_free_statedb_instance(RevmInstanceStateDB* instance);
+
+// Execute a CALL against a contract using a StateDB-backed instance
+ExecutionResultFFI* revm_call_contract_statedb(
+    RevmInstanceStateDB* instance,
+    const char* from,
+    const char* to,
+    const unsigned char* data,
+    unsigned int data_len,
+    const char* value,
+    uint64_t gas_limit);
+
 #ifdef __cplusplus
 }
 #endif
