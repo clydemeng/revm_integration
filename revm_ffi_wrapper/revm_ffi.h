@@ -158,6 +158,16 @@ ExecutionResultFFI* revm_call_contract_statedb(
     const char* value,
     uint64_t gas_limit);
 
+// Same as above but commits state changes (replay_commit).
+ExecutionResultFFI* revm_call_contract_statedb_commit(
+    RevmInstanceStateDB* instance,
+    const char* from,
+    const char* to,
+    const unsigned char* data,
+    unsigned int data_len,
+    const char* value,
+    uint64_t gas_limit);
+
 #ifdef __cplusplus
 }
 #endif

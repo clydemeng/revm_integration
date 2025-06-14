@@ -736,6 +736,80 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     }
 }
 
+/// Call a contract via StateDB-backed instance with commit
+#[no_mangle]
+pub unsafe extern "C" fn revm_call_contract_statedb_commit(
+    instance: *mut RevmInstanceStateDB,
+    from: *const c_char,
+    to: *const c_char,
+    data: *const u8,
+    data_len: c_uint,
+    value: *const c_char,
+    gas_limit: u64,
+) -> *mut ExecutionResultFFI {
+    use crate::utils::{c_str_to_string, hex_to_address, hex_to_u256, convert_execution_result};
+    if instance.is_null() {
+        return std::ptr::null_mut();
+    }
+    let inst = &mut *instance;
+    let evm = &mut inst.evm;
+
+    // translate inputs (reuse earlier logic via inline closure for brevity)
+    let translate_addr = |ptr: *const c_char| -> Result<revm::primitives::Address, String> {
+        c_str_to_string(ptr)
+            .map_err(|e| e.to_string())
+            .and_then(|s| hex_to_address(&s).map_err(|e| e.to_string()))
+    };
+
+    let from_addr = match translate_addr(from) {
+        Ok(a) => a,
+        Err(e) => { inst.last_error = Some(e); return std::ptr::null_mut(); }
+    };
+    let to_addr = match translate_addr(to) {
+        Ok(a) => a,
+        Err(e) => { inst.last_error = Some(e); return std::ptr::null_mut(); }
+    };
+
+    let value_u256 = if value.is_null() {
+        U256::ZERO
+    } else {
+        match c_str_to_string(value).and_then(|s| hex_to_u256(&s)) {
+            Ok(v) => v,
+            Err(e) => { inst.last_error = Some(e.to_string()); return std::ptr::null_mut(); }
+        }
+    };
+
+    let call_data = if data.is_null() || data_len == 0 {
+        Bytes::new()
+    } else {
+        let slice = std::slice::from_raw_parts(data, data_len as usize);
+        Bytes::copy_from_slice(slice)
+    };
+
+    // chain_id
+    let chain_id = evm.ctx().cfg.chain_id;
+    let current_nonce = evm.ctx().journal().db().basic(from_addr).ok().flatten().map(|acc| acc.nonce).unwrap_or(0);
+
+    evm.ctx().modify_tx(|tx| {
+        tx.caller = from_addr;
+        tx.kind = TxKind::Call(to_addr);
+        tx.value = value_u256;
+        tx.data = call_data;
+        tx.gas_limit = gas_limit;
+        tx.gas_price = 0u128;
+        tx.nonce = current_nonce;
+        tx.chain_id = Some(chain_id);
+    });
+
+    match evm.replay_commit() {
+        Ok(res) => Box::into_raw(Box::new(convert_execution_result(res))),
+        Err(e) => {
+            inst.last_error = Some(e.to_string());
+            std::ptr::null_mut()
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 //  Tests – ensure the constructor works and produces a usable instance.
 // ---------------------------------------------------------------------------
