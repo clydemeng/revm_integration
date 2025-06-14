@@ -698,9 +698,16 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     // Chain ID from cfg env
     let chain_id = evm.ctx().cfg.chain_id;
 
-    // Determine nonce
-    let current_nonce = match evm.ctx().journal().db().basic(from_addr) {
-        Ok(opt) => opt.map(|acc| acc.nonce).unwrap_or(0),
+    // Determine nonce & balance for debug
+    let (current_nonce, from_balance) = match evm.ctx().journal().db().basic(from_addr) {
+        Ok(opt) => {
+            if let Some(acc) = opt {
+                println!("[Rust] DB basic balance = {}", acc.balance);
+                (acc.nonce, acc.balance)
+            } else {
+                (0, U256::ZERO)
+            }
+        }
         Err(e) => {
             inst.last_error = Some(e.to_string());
             return std::ptr::null_mut();
