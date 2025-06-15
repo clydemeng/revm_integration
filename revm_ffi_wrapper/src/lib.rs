@@ -16,9 +16,10 @@ use std::ptr;
 
 use revm::{
     context::{CfgEnv, Context},
-    database::CacheDB,
+    // database::CacheDB,
     database_interface::EmptyDB,
     handler::MainnetEvm,
+    database_interface::DatabaseCommit,
     primitives::hardfork::SpecId,
     ExecuteCommitEvm, ExecuteEvm, MainBuilder,
 };
@@ -135,17 +136,8 @@ pub extern "C" fn revm_new_with_config(config: *const RevmConfigFFI) -> *mut Rev
         cfg_env.limit_contract_code_size = Some(config.max_code_size as usize);
     }
     
-    // Create cache database and context with custom configuration
-    let cache_db = CacheDB::<EmptyDB>::default();
-    let context = Context::new(cache_db, spec_id)
-        .with_cfg(cfg_env);
-    
-    let evm = context.build_mainnet();
-    
-    Box::into_raw(Box::new(RevmInstance { 
-        evm,
-        last_error: None,
-    }))
+    // TODO: support Go-backed database for generic REVM instances if needed.
+    unimplemented!("revm_new_with_config currently supports only in-memory DB in this build");
 }
 
 /// Free a REVM instance
@@ -218,14 +210,20 @@ pub unsafe extern "C" fn revm_execute_commit(instance: *mut RevmInstance) -> *mu
     
     let instance = &mut *instance;
     
-    match instance.evm.replay_commit() {
-        Ok(result) => {
-            let ffi_result = convert_execution_result(result);
-            Box::into_raw(Box::new(ffi_result))
+    match instance.evm.replay() {
+        Ok(result_and_state) => {
+            println!("[Rust] StateDB replay executed; committing {} account(s)", result_and_state.state.len());
+
+            {
+                let db_mut = instance.evm.ctx().journal().db();
+                db_mut.commit(result_and_state.state.clone());
+            }
+
+            Box::into_raw(Box::new(convert_execution_result(result_and_state.result)))
         }
         Err(e) => {
-            eprintln!("[Rust] evm.replay_commit error: {}", e);
-            instance.last_error = Some(format!("Execution failed: {:?}", e));
+            eprintln!("[Rust] replay error: {}", e);
+            instance.last_error = Some(e.to_string());
             ptr::null_mut()
         }
     }
@@ -545,8 +543,8 @@ pub struct RevmInstanceStateDB {
             revm::context::BlockEnv,
             revm::context::TxEnv,
             revm::context::CfgEnv,
-            CacheDB<GoDatabase>,
-            revm::Journal<CacheDB<GoDatabase>>,
+            GoDatabase,
+            revm::Journal<GoDatabase>,
             (),
         >,
     >,
@@ -618,8 +616,7 @@ pub extern "C" fn revm_new_with_statedb(
 
     // Hook up the external database via `GoDatabase`.
     let external_db = GoDatabase::new(handle);
-    let cache_db = CacheDB::new(external_db);
-    let context = Context::new(cache_db, spec_id).with_cfg(cfg_env);
+    let context = Context::new(external_db, spec_id).with_cfg(cfg_env);
     let evm = context.build_mainnet();
 
     Box::into_raw(Box::new(RevmInstanceStateDB {
@@ -702,7 +699,7 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     let (current_nonce, from_balance) = match evm.ctx().journal().db().basic(from_addr) {
         Ok(opt) => {
             if let Some(acc) = opt {
-                println!("[Rust] DB basic balance = {}", acc.balance);
+                println!("[Rust] DB basic nonce={} balance={}", acc.nonce, acc.balance);
                 (acc.nonce, acc.balance)
             } else {
                 (0, U256::ZERO)
@@ -801,9 +798,19 @@ pub unsafe extern "C" fn revm_call_contract_statedb_commit(
         tx.chain_id = Some(chain_id);
     });
 
-    match evm.replay_commit() {
-        Ok(res) => Box::into_raw(Box::new(convert_execution_result(res))),
+    match evm.replay() {
+        Ok(result_and_state) => {
+            println!("[Rust] StateDB replay executed; committing {} account(s)", result_and_state.state.len());
+
+            {
+                let db_mut = evm.ctx().journal().db();
+                db_mut.commit(result_and_state.state.clone());
+            }
+
+            Box::into_raw(Box::new(convert_execution_result(result_and_state.result)))
+        }
         Err(e) => {
+            eprintln!("[Rust] replay error: {}", e);
             inst.last_error = Some(e.to_string());
             std::ptr::null_mut()
         }

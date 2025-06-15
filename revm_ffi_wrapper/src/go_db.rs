@@ -15,6 +15,9 @@ use std::ffi::c_void;
 use std::ptr;
 use std::{error::Error, fmt};
 use core::sync::atomic::{AtomicUsize, Ordering};
+use revm::state::Account;
+use std::collections::HashMap;
+use revm::database_interface::DatabaseCommit;
 
 #[cfg(test)]
 pub static TEST_LAST_HANDLE: AtomicUsize = AtomicUsize::new(0);
@@ -68,6 +71,10 @@ impl GoDatabase {
     fn u256_to_ffi_hash(value: U256) -> FFIHash {
         FFIHash { bytes: value.to_be_bytes() }
     }
+
+    fn u256_to_ffi_u256(value: U256) -> FFIU256 {
+        FFIU256 { bytes: value.to_be_bytes() }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +91,8 @@ extern "C" {
         out_ptr: *mut *mut u8,
         out_len: *mut u32,
     ) -> i32;
+    fn re_state_set_basic(handle: usize, addr: FFIAddress, info: FFIAccountInfo) -> i32;
+    fn re_state_set_storage(handle: usize, addr: FFIAddress, slot: FFIHash, val: FFIU256) -> i32;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,6 +219,42 @@ impl Database for GoDatabase {
 
     fn block_hash(&mut self, number: u64) -> Result<B256, Self::Error> {
         self.block_hash_ref(number)
+    }
+}
+
+impl DatabaseCommit for GoDatabase {
+    fn commit(&mut self, changes: HashMap<Address, Account>) {
+        println!("[Rust] GoDatabase.commit invoked, {} account(s)", changes.len());
+        for (addr, account) in changes {
+            // Debug print
+            println!(
+                "[Rust] COMMIT addr=0x{:x} nonce={} balance={:#x}",
+                addr,
+                account.info.nonce,
+                account.info.balance
+            );
+            // commit basic
+            let ffi_addr = GoDatabase::address_to_ffi(addr);
+            let info = FFIAccountInfo {
+                balance: GoDatabase::u256_to_ffi_u256(account.info.balance),
+                nonce: account.info.nonce,
+                code_hash: GoDatabase::hash_to_ffi(account.info.code_hash),
+            };
+            unsafe { re_state_set_basic(self.handle, ffi_addr, info); }
+
+            // storage
+            for (slot, value) in account.changed_storage_slots() {
+                println!(
+                    "[Rust] COMMIT_STORAGE addr=0x{:x} slot={:#x} value={:#x}",
+                    addr,
+                    slot,
+                    value.present_value()
+                );
+                let ffi_slot = GoDatabase::u256_to_ffi_hash(*slot);
+                let ffi_val = GoDatabase::u256_to_ffi_u256(value.present_value());
+                unsafe { re_state_set_storage(self.handle, ffi_addr, ffi_slot, ffi_val); }
+            }
+        }
     }
 }
 

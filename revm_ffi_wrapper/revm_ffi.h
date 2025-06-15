@@ -168,6 +168,29 @@ ExecutionResultFFI* revm_call_contract_statedb_commit(
     const char* value,
     uint64_t gas_limit);
 
+// ---------------- types for StateDB bridge ----------------
+typedef struct {
+    uint8_t bytes[20];
+} FFIAddress;
+
+typedef struct {
+    uint8_t bytes[32];
+} FFIHash;
+
+typedef struct {
+    uint8_t bytes[32];
+} FFIU256;
+
+typedef struct {
+    FFIU256 balance;
+    uint64_t nonce;
+    FFIHash code_hash;
+} FFIAccountInfo;
+
+// Write-back callbacks from Rust -> Go
+int re_state_set_basic(size_t handle, FFIAddress addr, FFIAccountInfo info);
+int re_state_set_storage(size_t handle, FFIAddress addr, FFIHash slot, FFIU256 value);
+
 #ifdef __cplusplus
 }
 #endif
