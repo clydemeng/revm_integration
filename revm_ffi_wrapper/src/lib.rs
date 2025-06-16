@@ -718,7 +718,7 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
         tx.value = value_u256;
         tx.data = call_data;
         tx.gas_limit = gas_limit;
-        tx.gas_price = 0u128; // view call: no gas price
+        tx.gas_price = 1_000_000_000u128; // 1 gwei – signer now pays gas
         tx.nonce = current_nonce;
         tx.chain_id = Some(chain_id);
     });
@@ -793,7 +793,7 @@ pub unsafe extern "C" fn revm_call_contract_statedb_commit(
         tx.value = value_u256;
         tx.data = call_data;
         tx.gas_limit = gas_limit;
-        tx.gas_price = 0u128;
+        tx.gas_price = 1_000_000_000u128; // 1 gwei – signer now pays gas
         tx.nonce = current_nonce;
         tx.chain_id = Some(chain_id);
     });
