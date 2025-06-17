@@ -18,6 +18,7 @@ use revm::{
     database::{CacheDB, EmptyDB},
     state::AccountInfo,
     ExecuteEvm,
+    handler::MainnetEvm,
 };
 
 use crate::types::{DeploymentResultFFI, ExecutionResultFFI, RevmInstance};
@@ -95,7 +96,18 @@ pub fn convert_execution_result(result: ExecutionResult<HaltReason>) -> Executio
                 output_data,
                 output_len,
                 logs_count: logs.len() as c_uint,
-                logs: std::ptr::null_mut(), // TODO: Convert logs
+                logs: {
+                    if logs.is_empty() {
+                        std::ptr::null_mut()
+                    } else {
+                        let mut ffi_logs: Vec<crate::types::LogFFI> = Vec::with_capacity(logs.len());
+                        for l in logs {
+                            ffi_logs.push(crate::types::LogFFI::from_revm_log(l));
+                        }
+                        let boxed = ffi_logs.into_boxed_slice();
+                        Box::into_raw(boxed) as *mut crate::types::LogFFI
+                    }
+                },
                 created_address: std::ptr::null_mut(),
             }
         }

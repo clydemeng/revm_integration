@@ -98,8 +98,8 @@ impl ExecutionResultFFI {
 }
 
 impl LogFFI {
-    fn from_revm_log(log: revm::primitives::Log) -> Self {
-        let address_str = format!("{:?}", log.address);
+    pub fn from_revm_log(log: revm::primitives::Log) -> Self {
+        let address_str = format!("0x{:x}", log.address);
         let address_ptr = match std::ffi::CString::new(address_str) {
             Ok(c_string) => c_string.into_raw(),
             Err(_) => std::ptr::null_mut(),
