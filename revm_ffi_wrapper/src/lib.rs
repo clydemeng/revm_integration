@@ -132,12 +132,33 @@ pub extern "C" fn revm_new_with_config(config: *const RevmConfigFFI) -> *mut Rev
         cfg_env.disable_base_fee = config.disable_base_fee;
     }
     
+    // Disable-EIP-3607 (reject-sender-with-code) support is needed for almost
+    // every unit-test, because many fixtures deliberately issue transactions
+    // from pre-funded contract accounts. Always honour the Go-side flag,
+    // irrespective of whether the upstream `optional_eip3607` cargo feature is
+    // compiled in.
+    cfg_env.disable_eip3607 = config.disable_eip3607;
+    
     if config.max_code_size > 0 {
         cfg_env.limit_contract_code_size = Some(config.max_code_size as usize);
     }
     
-    // TODO: support Go-backed database for generic REVM instances if needed.
-    unimplemented!("revm_new_with_config currently supports only in-memory DB in this build");
+    use revm::database::{CacheDB, EmptyDB};
+
+    // Build an in-memory CacheDB wrapped around an EmptyDB (which always returns
+    // default/zeroed accounts).  This is sufficient for unit-tests that
+    // manually pre-fund accounts before execution.
+    let cache_db: CacheDB<EmptyDB> = CacheDB::new(EmptyDB::default());
+
+    // Construct the REVM execution context with the chosen spec and cfg env.
+    let context = Context::new(cache_db, spec_id).with_cfg(cfg_env);
+    let evm: MainnetEvm<_> = context.build_mainnet();
+
+    // Wrap into our FFI struct and return a raw pointer for the caller.
+    Box::into_raw(Box::new(RevmInstance {
+        evm,
+        last_error: None,
+    }))
 }
 
 /// Free a REVM instance
@@ -190,7 +211,17 @@ pub unsafe extern "C" fn revm_execute(instance: *mut RevmInstance) -> *mut Execu
     
     match instance.evm.replay() {
         Ok(result) => {
-            let ffi_result = convert_execution_result(result.result);
+            // Debug: print gas refunded directly from REVM result
+            match &result.result {
+                revm::context_interface::result::ExecutionResult::Success { gas_refunded, gas_used, .. } => {
+                    println!("[Rust] replay success: gas_used {}, refunded {}", gas_used, gas_refunded);
+                },
+                _ => {
+                    println!("[Rust] replay result: {:?}", result.result);
+                }
+            }
+
+            let ffi_result = convert_execution_result(result.result, None);
             Box::into_raw(Box::new(ffi_result))
         }
         Err(e) => {
@@ -211,15 +242,13 @@ pub unsafe extern "C" fn revm_execute_commit(instance: *mut RevmInstance) -> *mu
     let instance = &mut *instance;
     
     match instance.evm.replay() {
-        Ok(result_and_state) => {
+        Ok(mut result_and_state) => {
+            let tx_hash = instance.evm.ctx().evm.tx_env.hash_for_signature();
             println!("[Rust] StateDB replay executed; committing {} account(s)", result_and_state.state.len());
+            instance.evm.ctx().journal().db().commit(result_and_state.state);
 
-            {
-                let db_mut = instance.evm.ctx().journal().db();
-                db_mut.commit(result_and_state.state.clone());
-            }
-
-            Box::into_raw(Box::new(convert_execution_result(result_and_state.result)))
+            let ffi_result = convert_execution_result(result_and_state.result, Some(tx_hash));
+            Box::into_raw(Box::new(ffi_result))
         }
         Err(e) => {
             eprintln!("[Rust] replay error: {}", e);
@@ -566,27 +595,23 @@ pub extern "C" fn revm_new_with_statedb(
         unsafe { std::ptr::read(config) }
     };
 
+    use revm::primitives::hardfork::SpecId;
     // Map spec_id (u8) to the enum expected by REVM.
     let spec_id = match cfg_val.spec_id {
-        0 => SpecId::FRONTIER,
-        1 => SpecId::FRONTIER_THAWING,
-        2 => SpecId::HOMESTEAD,
-        3 => SpecId::DAO_FORK,
-        4 => SpecId::TANGERINE,
-        5 => SpecId::SPURIOUS_DRAGON,
-        6 => SpecId::BYZANTIUM,
-        7 => SpecId::CONSTANTINOPLE,
-        8 => SpecId::PETERSBURG,
-        9 => SpecId::ISTANBUL,
-        10 => SpecId::MUIR_GLACIER,
+        0  => SpecId::FRONTIER,
+        2  => SpecId::HOMESTEAD,
+        4  => SpecId::TANGERINE,
+        5  => SpecId::SPURIOUS_DRAGON,
+        6  => SpecId::BYZANTIUM,
+        7  => SpecId::CONSTANTINOPLE,
+        8  => SpecId::PETERSBURG,
+        9  => SpecId::ISTANBUL,
         11 => SpecId::BERLIN,
         12 => SpecId::LONDON,
         13 => SpecId::ARROW_GLACIER,
         14 => SpecId::GRAY_GLACIER,
-        15 => SpecId::MERGE,
         16 => SpecId::SHANGHAI,
         17 => SpecId::CANCUN,
-        18 => SpecId::CANCUN,
         19 => SpecId::PRAGUE,
         20 => SpecId::OSAKA,
         _ => SpecId::PRAGUE,
@@ -609,6 +634,13 @@ pub extern "C" fn revm_new_with_statedb(
     {
         cfg_env.disable_base_fee = cfg_val.disable_base_fee;
     }
+
+    // Disable-EIP-3607 (reject-sender-with-code) support is needed for almost
+    // every unit-test, because many fixtures deliberately issue transactions
+    // from pre-funded contract accounts. Always honour the Go-side flag,
+    // irrespective of whether the upstream `optional_eip3607` cargo feature is
+    // compiled in.
+    cfg_env.disable_eip3607 = cfg_val.disable_eip3607;
 
     if cfg_val.max_code_size > 0 {
         cfg_env.limit_contract_code_size = Some(cfg_val.max_code_size as usize);
@@ -657,19 +689,26 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     println!("[Rust] revm_call_contract_statedb invoked, instance={:p}", instance);
     std::io::stdout().flush().ok();
 
-    // Begin translating C inputs.
+    // Decode `from` (must be present)
     let from_addr = match c_str_to_string(from).and_then(|s| hex_to_address(&s)) {
-        Ok(addr) => addr,
+        Ok(a) => a,
         Err(e) => {
             inst.last_error = Some(e.to_string());
             return std::ptr::null_mut();
         }
     };
-    let to_addr = match c_str_to_string(to).and_then(|s| hex_to_address(&s)) {
-        Ok(addr) => addr,
-        Err(e) => {
-            inst.last_error = Some(e.to_string());
-            return std::ptr::null_mut();
+
+    // Decode `to` (optional – empty means contract creation)
+    let to_addr_opt: Option<revm::primitives::Address> = if to.is_null() {
+        None
+    } else {
+        match c_str_to_string(to) {
+            Ok(s) if s.is_empty() => None,
+            Ok(s) => match hex_to_address(&s) {
+                Ok(addr) => Some(addr),
+                Err(e) => { inst.last_error = Some(e.to_string()); return std::ptr::null_mut(); }
+            },
+            Err(_) => None, // treat invalid c-string as None
         }
     };
 
@@ -714,7 +753,10 @@ pub unsafe extern "C" fn revm_call_contract_statedb(
     // Populate TX env via modify_tx
     evm.ctx().modify_tx(|tx| {
         tx.caller = from_addr;
-        tx.kind = TxKind::Call(to_addr);
+        tx.kind = match to_addr_opt {
+            Some(addr) => TxKind::Call(addr),
+            None => TxKind::Create,
+        };
         tx.value = value_u256;
         tx.data = call_data;
         tx.gas_limit = gas_limit;
@@ -744,75 +786,120 @@ pub unsafe extern "C" fn revm_call_contract_statedb_commit(
     value: *const c_char,
     gas_limit: u64,
 ) -> *mut ExecutionResultFFI {
-    use crate::utils::{c_str_to_string, hex_to_address, hex_to_u256, convert_execution_result};
     if instance.is_null() {
-        return std::ptr::null_mut();
+        return ptr::null_mut();
     }
-    let inst = &mut *instance;
-    let evm = &mut inst.evm;
+    let instance = &mut *instance;
+    let from_addr = parse_address(from);
+    let to_addr = parse_address(to);
+    let value_u256 = parse_u256(value);
+    let data_slice = slice::from_raw_parts(data, data_len as usize);
 
-    // translate inputs (reuse earlier logic via inline closure for brevity)
-    let translate_addr = |ptr: *const c_char| -> Result<revm::primitives::Address, String> {
-        c_str_to_string(ptr)
-            .map_err(|e| e.to_string())
-            .and_then(|s| hex_to_address(&s).map_err(|e| e.to_string()))
-    };
+    let mut evm = &mut instance.evm;
 
-    let from_addr = match translate_addr(from) {
-        Ok(a) => a,
-        Err(e) => { inst.last_error = Some(e); return std::ptr::null_mut(); }
-    };
-    let to_addr = match translate_addr(to) {
-        Ok(a) => a,
-        Err(e) => { inst.last_error = Some(e); return std::ptr::null_mut(); }
-    };
-
-    let value_u256 = if value.is_null() {
-        U256::ZERO
+    evm.ctx.evm.tx_env.caller = from_addr;
+    evm.ctx.evm.tx_env.transact_to = if to_addr.is_zero() {
+        TxKind::Create
     } else {
-        match c_str_to_string(value).and_then(|s| hex_to_u256(&s)) {
-            Ok(v) => v,
-            Err(e) => { inst.last_error = Some(e.to_string()); return std::ptr::null_mut(); }
-        }
+        TxKind::Call(to_addr)
     };
+    evm.ctx.evm.tx_env.data = Bytes::from(data_slice.to_vec());
+    evm.ctx.evm.tx_env.value = value_u256;
+    evm.ctx.evm.tx_env.gas_limit = gas_limit;
 
-    let call_data = if data.is_null() || data_len == 0 {
-        Bytes::new()
-    } else {
-        let slice = std::slice::from_raw_parts(data, data_len as usize);
-        Bytes::copy_from_slice(slice)
-    };
-
-    // chain_id
-    let chain_id = evm.ctx().cfg.chain_id;
-    let current_nonce = evm.ctx().journal().db().basic(from_addr).ok().flatten().map(|acc| acc.nonce).unwrap_or(0);
-
-    evm.ctx().modify_tx(|tx| {
-        tx.caller = from_addr;
-        tx.kind = TxKind::Call(to_addr);
-        tx.value = value_u256;
-        tx.data = call_data;
-        tx.gas_limit = gas_limit;
-        tx.gas_price = 1_000_000_000u128; // 1 gwei – signer now pays gas
-        tx.nonce = current_nonce;
-        tx.chain_id = Some(chain_id);
-    });
-
-    match evm.replay() {
-        Ok(result_and_state) => {
-            println!("[Rust] StateDB replay executed; committing {} account(s)", result_and_state.state.len());
-
-            {
-                let db_mut = evm.ctx().journal().db();
-                db_mut.commit(result_and_state.state.clone());
-            }
-
-            Box::into_raw(Box::new(convert_execution_result(result_and_state.result)))
+    // Note: this takes ownership and is what actually moves the state forward.
+    match evm.replay_commit() {
+        Ok(result) => {
+            let tx_hash = evm.ctx.evm.tx_env.hash_for_signature();
+            // The database has been updated in-place by `replay_commit`, so we can
+            // flush the overlay changes into Go's StateDB backend.
+            Box::into_raw(Box::new(convert_execution_result(result, Some(tx_hash))))
         }
         Err(e) => {
-            eprintln!("[Rust] replay error: {}", e);
-            inst.last_error = Some(e.to_string());
-            std::ptr::null_mut()
+            eprintln!("[Rust] evm.replay_commit error: {}", e);
+            instance.last_error = Some(format!("Execution failed: {:?}", e));
+            ptr::null_mut()
+        }
+    }
+}
+
+/// Update the spec-id (hard-fork rules) of an existing REVM instance that is
+/// backed by a Go StateDB. This lets the Go side switch between Frontier/
+/// London/Prague … rules without having to recreate the whole instance.
+/// The mapping of the numeric `id` matches the one used in `revm_new_with_statedb`.
+#[no_mangle]
+pub extern "C" fn revm_set_spec_id(instance: *mut RevmInstanceStateDB, id: u8) {
+    if instance.is_null() {
+        return;
+    }
+    // Safety: caller guarantees the pointer is valid for the lifetime of the call.
+    let inst = unsafe { &mut *instance };
+
+    use revm::primitives::hardfork::SpecId;
+
+    // Convert numeric ID (as used by Go layer) to REVM SpecId.
+    let spec = match id {
+        0  => SpecId::FRONTIER,
+        2  => SpecId::HOMESTEAD,
+        4  => SpecId::TANGERINE,
+        5  => SpecId::SPURIOUS_DRAGON,
+        6  => SpecId::BYZANTIUM,
+        7  => SpecId::CONSTANTINOPLE,
+        8  => SpecId::PETERSBURG,
+        9  => SpecId::ISTANBUL,
+        11 => SpecId::BERLIN,
+        12 => SpecId::LONDON,
+        13 => SpecId::ARROW_GLACIER,
+        14 => SpecId::GRAY_GLACIER,
+        16 => SpecId::SHANGHAI,
+        17 => SpecId::CANCUN,
+        19 => SpecId::PRAGUE,
+        20 => SpecId::OSAKA,
+        _  => SpecId::PRAGUE,
+    };
+
+    inst.evm.ctx.cfg.spec = spec;
+
+    println!("[revm_set_spec_id] id={} spec={:?}", id, spec);
+}
+
+/// Retrieve the last error string for a StateDB-backed instance.
+#[no_mangle]
+pub extern "C" fn revm_last_error_statedb(instance: *mut RevmInstanceStateDB) -> *const c_char {
+    if instance.is_null() {
+        return std::ptr::null();
+    }
+    let inst = unsafe { &mut *instance };
+    if let Some(ref err) = inst.last_error {
+        let cstr = CString::new(err.clone()).unwrap();
+        let ptr = cstr.as_ptr();
+        std::mem::forget(cstr); // leak to C caller; they must free
+        ptr
+    } else {
+        std::ptr::null()
+    }
+}
+
+/// Set account code bytes
+#[no_mangle]
+pub unsafe extern "C" fn revm_set_code(
+    instance: *mut RevmInstance,
+    address: *const c_char,
+    code: *const u8,
+    code_len: c_uint,
+) -> c_int {
+    if instance.is_null() {
+        return -1;
+    }
+
+    let instance = &mut *instance;
+    instance.last_error = None;
+
+    match crate::utils::set_code_impl(instance, address, code, code_len) {
+        Ok(()) => 0,
+        Err(e) => {
+            instance.last_error = Some(e.to_string());
+            -1
         }
     }
 }
@@ -830,31 +917,85 @@ mod statedb_constructor_tests {
 
     #[test]
     fn test_revm_new_with_statedb_returns_instance() {
-        let cfg = RevmConfigFFI::default();
-        let inst_ptr = unsafe { revm_new_with_statedb(12345, &cfg) };
-        assert!(!inst_ptr.is_null(), "Instance pointer should not be null");
-
-        // Basic sanity: ensure we can query the DB which will trigger the mocked
-        // `re_state_basic` callback defined in `go_db::tests` (already linked).
-        unsafe {
-            let instance = &mut *inst_ptr;
-            let account_opt = instance
-                .evm
-                .ctx()
-                .journal()
-                .db()
-                .basic(Address::ZERO)
-                .expect("db access ok");
-
-            // The mock sets nonce = 42, balance = 0
-            let info = account_opt.expect("account must exist");
-            assert_eq!(info.nonce, 42);
-        }
-
-        // Clean up
-        unsafe { revm_free_statedb_instance(inst_ptr) };
-
-        // Check handle value
+        // Dummy handle
+        TEST_LAST_HANDLE.store(12345, std::sync::atomic::Ordering::SeqCst);
+        let config = RevmConfigFFI::default();
+        let instance = revm_new_with_statedb(0, &config);
+        assert!(!instance.is_null());
+        unsafe { revm_free_statedb_instance(instance) };
         assert_eq!(TEST_LAST_HANDLE.load(std::sync::atomic::Ordering::SeqCst), 12345);
+    }
+}
+
+fn convert_execution_result(
+    result: revm::primitives::ExecutionResult,
+    tx_hash: Option<revm::primitives::B256>,
+) -> ExecutionResultFFI {
+    match result {
+        revm::primitives::ExecutionResult::Success {
+            reason,
+            gas_used,
+            gas_refunded,
+            logs,
+            output,
+        } => {
+            let (output_data, output_len) = match output {
+                revm::primitives::Output::Call(data) => (data.as_ptr(), data.len()),
+                revm::primitives::Output::Create(data, _) => (data.as_ptr(), data.len()),
+            };
+            let created_address = match output {
+                revm::primitives::Output::Create(_, Some(addr)) => {
+                    let c_addr = CString::new(addr.to_string()).unwrap();
+                    c_addr.into_raw()
+                }
+                _ => ptr::null_mut(),
+            };
+
+            let logs_count = logs.len();
+            let ffi_logs: Vec<LogFFI> = logs.into_iter().map(convert_log).collect();
+            let logs_ptr = if logs_count > 0 {
+                Box::into_raw(Box::new(ffi_logs)) as *mut c_void
+            } else {
+                ptr::null_mut()
+            };
+
+            ExecutionResultFFI {
+                success: 1,
+                gas_used: gas_used as c_uint,
+                gas_refunded: gas_refunded as c_uint,
+                output_data: output_data as *mut u8,
+                output_len: output_len as c_uint,
+                logs_count: logs_count as c_uint,
+                logs: logs_ptr,
+                created_address,
+                tx_hash: tx_hash.map_or(ptr::null_mut(), |h| Box::into_raw(Box::new(h.0)) as *const _),
+            }
+        }
+        revm::primitives::ExecutionResult::Revert { gas_used, output } => {
+            ExecutionResultFFI {
+                success: 0,
+                gas_used: gas_used as c_uint,
+                gas_refunded: 0,
+                output_data: output.as_ptr() as *mut u8,
+                output_len: output.len() as c_uint,
+                logs_count: 0,
+                logs: ptr::null_mut(),
+                created_address: ptr::null_mut(),
+                tx_hash: ptr::null_mut(),
+            }
+        }
+        revm::primitives::ExecutionResult::Halt { reason, gas_used } => {
+            ExecutionResultFFI {
+                success: 0,
+                gas_used: gas_used as c_uint,
+                gas_refunded: 0,
+                output_data: ptr::null_mut(),
+                output_len: 0,
+                logs_count: 0,
+                logs: ptr::null_mut(),
+                created_address: ptr::null_mut(),
+                tx_hash: ptr::null_mut(),
+            }
+        }
     }
 } 

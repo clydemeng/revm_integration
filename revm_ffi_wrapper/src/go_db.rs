@@ -93,6 +93,7 @@ extern "C" {
     ) -> i32;
     fn re_state_set_basic(handle: usize, addr: FFIAddress, info: FFIAccountInfo) -> i32;
     fn re_state_set_storage(handle: usize, addr: FFIAddress, slot: FFIHash, val: FFIU256) -> i32;
+    fn re_state_store_code(handle: usize, code_hash: FFIHash, code: *const u8, len: u32) -> i32;
 }
 
 // ---------------------------------------------------------------------------
@@ -241,6 +242,26 @@ impl DatabaseCommit for GoDatabase {
                 code_hash: GoDatabase::hash_to_ffi(account.info.code_hash),
             };
             unsafe { re_state_set_basic(self.handle, ffi_addr, info); }
+
+            // If the account has bytecode attached, forward it to Go so that it
+            // can be cached under its code hash immediately. This ensures that
+            // freshly-created contracts become visible via CodeAt right after
+            // FlushPending, which unblocks helpers such as WaitDeployed in the
+            // simulated backend.
+            if let Some(bc) = &account.info.code {
+                let code_bytes = bc.bytes();
+                if !code_bytes.is_empty() {
+                    let ffi_code_hash = GoDatabase::hash_to_ffi(account.info.code_hash);
+                    unsafe {
+                        re_state_store_code(
+                            self.handle,
+                            ffi_code_hash,
+                            code_bytes.as_ptr(),
+                            code_bytes.len() as u32,
+                        );
+                    }
+                }
+            }
 
             // storage
             for (slot, value) in account.changed_storage_slots() {

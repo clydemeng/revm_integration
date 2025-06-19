@@ -23,8 +23,9 @@ pub struct ExecutionResultFFI {
     pub output_data: *mut u8,
     pub output_len: c_uint,
     pub logs_count: c_uint,
-    pub logs: *mut LogFFI,
+    pub logs: *mut c_void, // LogFFI*
     pub created_address: *mut c_char, // Only for contract creation
+    pub tx_hash: *const [u8; 32],
 }
 
 /// FFI-compatible log structure
@@ -62,6 +63,8 @@ pub struct RevmConfigFFI {
     pub disable_block_gas_limit: bool,
     /// Whether to disable base fee checks
     pub disable_base_fee: bool,
+    /// Whether to disable EIP-3607 sender-with-code rejection (useful for internal tx's)
+    pub disable_eip3607: bool,
     /// Maximum contract code size (0 for default 24KB limit)
     pub max_code_size: u32,
 }
@@ -75,6 +78,7 @@ impl Default for RevmConfigFFI {
             disable_balance_check: false,
             disable_block_gas_limit: false,
             disable_base_fee: false,
+            disable_eip3607: true,
             max_code_size: 0, // Use default
         }
     }

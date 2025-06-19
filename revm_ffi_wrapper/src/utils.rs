@@ -507,4 +507,42 @@ pub unsafe fn view_call_contract_impl(
     // Use replay() instead of replay_commit() for view calls
     let result = instance.evm.replay()?;
     Ok(convert_execution_result(result.result))
+}
+
+/// Set account code (overwrite existing runtime code).
+pub unsafe fn set_code_impl(
+    instance: &mut RevmInstance,
+    address: *const c_char,
+    code_ptr: *const u8,
+    code_len: c_uint,
+) -> Result<()> {
+    use revm::{bytecode::Bytecode, primitives::{keccak256, B256}};
+
+    let addr = hex_to_address(&c_str_to_string(address)?)?;
+    let code_slice = if code_ptr.is_null() || code_len == 0 {
+        &[]
+    } else {
+        std::slice::from_raw_parts(code_ptr, code_len as usize)
+    };
+
+    // Prepare Bytecode and hash
+    let bytecode = Bytecode::new_raw(code_slice.to_vec().into());
+    let hash: B256 = keccak256(code_slice);
+
+    let db = instance.evm.ctx().journal().db();
+
+    // Build AccountInfo
+    let mut info = revm::state::AccountInfo {
+        balance: U256::ZERO,
+        nonce: 0,
+        code_hash: hash,
+        code: Some(bytecode.clone()),
+    };
+
+    // Map code hash to bytecode so loader can fetch by hash
+    db.insert_contract(&mut info);
+    db.insert_account_info(addr, info);
+
+    println!("[Rust] set_code: {} bytes assigned", code_slice.len());
+    Ok(())
 } 

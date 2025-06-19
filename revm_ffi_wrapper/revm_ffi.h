@@ -19,6 +19,7 @@ typedef struct {
     bool disable_balance_check;         // Whether to disable balance checks (useful for testing)
     bool disable_block_gas_limit;       // Whether to disable block gas limit checks
     bool disable_base_fee;              // Whether to disable base fee checks
+    bool disable_eip3607;               // Whether to disable EIP-3607 sender-with-code check
     uint32_t max_code_size;             // Maximum contract code size (0 for default 24KB limit)
 } RevmConfigFFI;
 
@@ -40,6 +41,7 @@ typedef struct {
     unsigned int logs_count;
     void* logs;  // LogFFI*
     char* created_address;
+    unsigned char tx_hash[32];
 } ExecutionResultFFI;
 
 // Log structure
@@ -127,8 +129,8 @@ char* revm_get_storage(
 );
 
 // Memory management for results
-void revm_free_execution_result(ExecutionResultFFI* result);
-void revm_free_deployment_result(DeploymentResultFFI* result);
+void revm_free_execution_result(ExecutionResultFFI* res);
+void revm_free_deployment_result(DeploymentResultFFI* res);
 void revm_free_string(char* str);
 
 // Error handling
@@ -190,6 +192,11 @@ typedef struct {
 // Write-back callbacks from Rust -> Go
 int re_state_set_basic(size_t handle, FFIAddress addr, FFIAccountInfo info);
 int re_state_set_storage(size_t handle, FFIAddress addr, FFIHash slot, FFIU256 value);
+
+// Update the active SpecId (fork rules) for a StateDB-backed instance.
+void revm_set_spec_id(RevmInstanceStateDB* inst, uint8_t spec_id);
+
+const char* revm_last_error_statedb(RevmInstanceStateDB* inst);
 
 #ifdef __cplusplus
 }
