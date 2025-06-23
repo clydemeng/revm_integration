@@ -1,6 +1,7 @@
 //! FFI-compatible types for REVM
 
 use std::os::raw::{c_char, c_int, c_uint};
+use std::os::raw::c_void;
 use revm::{
     database::CacheDB,
     database_interface::EmptyDB,

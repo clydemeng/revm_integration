@@ -114,6 +114,17 @@ fn ffi_account_to_revm(acc: &FFIAccountInfo) -> AccountInfo {
 }
 
 // ---------------------------------------------------------------------------
+//  Optional debug logger – enable with `--features revm_verbose` when building
+//  the `revm_ffi_wrapper` crate. In normal builds the macro expands to nothing
+//  and incurs zero runtime overhead.
+// ---------------------------------------------------------------------------
+
+#[macro_export]
+macro_rules! dbg_println {
+    ($($arg:tt)*) => {};
+}
+
+// ---------------------------------------------------------------------------
 //  Trait impls
 // ---------------------------------------------------------------------------
 
@@ -225,10 +236,10 @@ impl Database for GoDatabase {
 
 impl DatabaseCommit for GoDatabase {
     fn commit(&mut self, changes: HashMap<Address, Account>) {
-        println!("[Rust] GoDatabase.commit invoked, {} account(s)", changes.len());
+        dbg_println!("[Rust] GoDatabase.commit invoked, {} account(s)", changes.len());
         for (addr, account) in changes {
             // Debug print
-            println!(
+            dbg_println!(
                 "[Rust] COMMIT addr=0x{:x} nonce={} balance={:#x}",
                 addr,
                 account.info.nonce,
@@ -265,7 +276,7 @@ impl DatabaseCommit for GoDatabase {
 
             // storage
             for (slot, value) in account.changed_storage_slots() {
-                println!(
+                dbg_println!(
                     "[Rust] COMMIT_STORAGE addr=0x{:x} slot={:#x} value={:#x}",
                     addr,
                     slot,

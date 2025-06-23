@@ -1,7 +1,7 @@
 //! Utility functions for FFI operations
 
 use std::ffi::{CStr, CString};
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::{c_char, c_uint, c_void};
 use std::slice;
 
 use anyhow::{anyhow, Result};
@@ -105,10 +105,11 @@ pub fn convert_execution_result(result: ExecutionResult<HaltReason>) -> Executio
                             ffi_logs.push(crate::types::LogFFI::from_revm_log(l));
                         }
                         let boxed = ffi_logs.into_boxed_slice();
-                        Box::into_raw(boxed) as *mut crate::types::LogFFI
+                        Box::into_raw(boxed) as *mut c_void
                     }
                 },
                 created_address: std::ptr::null_mut(),
+                tx_hash: std::ptr::null_mut(),
             }
         }
         ExecutionResult::Revert { gas_used, output } => {
@@ -129,6 +130,7 @@ pub fn convert_execution_result(result: ExecutionResult<HaltReason>) -> Executio
                 logs_count: 0,
                 logs: std::ptr::null_mut(),
                 created_address: std::ptr::null_mut(),
+                tx_hash: std::ptr::null_mut(),
             }
         }
         ExecutionResult::Halt { reason: _, gas_used } => {
@@ -141,6 +143,7 @@ pub fn convert_execution_result(result: ExecutionResult<HaltReason>) -> Executio
                 logs_count: 0,
                 logs: std::ptr::null_mut(),
                 created_address: std::ptr::null_mut(),
+                tx_hash: std::ptr::null_mut(),
             }
         }
     }
