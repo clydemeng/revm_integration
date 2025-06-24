@@ -1117,4 +1117,79 @@ pub extern "C" fn revm_prefetch_batch(
     for (addr, slot) in stor_set {
         let _ = evm.ctx().journal().db().storage(addr, slot);
     }
+}
+
+/// Create a lightweight snapshot (clone) of the given `RevmInstanceStateDB`.
+///
+/// The returned pointer owns an independent `RevmInstanceStateDB` value whose
+/// internal EVM is *cloned* from the parent.  All pointers remain valid as the
+/// underlying database (`CacheDB<GoDatabase>`) implements `Clone` cheaply by
+/// reference-copying the external handle and duplicating the in-memory cache.
+///
+/// NOTE: For Phase-1 plumbing this is a deep clone; subsequent phases will
+/// switch to `CacheDB::nest()` to provide true copy-on-write snapshotting.
+#[no_mangle]
+pub unsafe extern "C" fn revm_snapshot_clone(
+    parent: *mut RevmInstanceStateDB,
+) -> *mut RevmInstanceStateDB {
+    if parent.is_null() {
+        return std::ptr::null_mut();
+    }
+
+    // SAFETY: caller guarantees `parent` is a valid pointer obtained from
+    // `revm_new_with_statedb` or a previous snapshot.
+    let parent_ref = &*parent;
+
+    let new_instance = RevmInstanceStateDB {
+        evm: parent_ref.evm.clone(),
+        last_error: None,
+    };
+
+    Box::into_raw(Box::new(new_instance))
+}
+
+/// Commit the changes from a snapshot back into its parent instance and free
+/// the snapshot.  Both pointers must be non-null and distinct. After a
+/// successful commit the `child` pointer must not be used again (it is freed
+/// internally).
+#[no_mangle]
+pub unsafe extern "C" fn revm_snapshot_commit(
+    parent: *mut RevmInstanceStateDB,
+    child: *mut RevmInstanceStateDB,
+) {
+    if parent.is_null() || child.is_null() || parent == child {
+        return;
+    }
+
+    let parent_ref = &mut *parent;
+    // Take ownership of the child so we can safely drop it later.
+    let mut child_box = Box::from_raw(child);
+
+    use revm::database::CacheDB;
+
+    // Access underlying databases (CacheDB<GoDatabase>) for both instances.
+    let parent_db: &mut CacheDB<go_db::GoDatabase> = (*parent_ref.evm)
+        .journal()
+        .db();
+
+    let child_db: &mut CacheDB<go_db::GoDatabase> = (*child_box.evm)
+        .journal()
+        .db();
+
+    // Merge accounts (overwrite with child's view where present).
+    for (addr, acc) in child_db.cache.accounts.drain() {
+        parent_db.cache.accounts.insert(addr, acc);
+    }
+    // Merge contracts (bytecode by hash).
+    for (hash, code) in child_db.cache.contracts.drain() {
+        parent_db.cache.contracts.insert(hash, code);
+    }
+    // Append logs.
+    parent_db.cache.logs.extend(child_db.cache.logs.drain(..));
+    // Merge block hashes.
+    for (num, h) in child_db.cache.block_hashes.drain() {
+        parent_db.cache.block_hashes.insert(num, h);
+    }
+
+    // Child is automatically dropped here freeing memory.
 } 

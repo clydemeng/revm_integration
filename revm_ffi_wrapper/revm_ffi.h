@@ -189,6 +189,12 @@ typedef struct {
     FFIHash code_hash;
 } FFIAccountInfo;
 
+// Batch prefetch tuple – mirrors Rust-side struct.
+typedef struct {
+    FFIAddress address; // account address (20 bytes)
+    FFIHash slot;       // storage slot (32-byte key). All-zero slot means account-only.
+} FFIBatchKey;
+
 // Write-back callbacks from Rust -> Go
 int re_state_set_basic(size_t handle, FFIAddress addr, FFIAccountInfo info);
 int re_state_set_storage(size_t handle, FFIAddress addr, FFIHash slot, FFIU256 value);
@@ -196,23 +202,22 @@ int re_state_set_storage(size_t handle, FFIAddress addr, FFIHash slot, FFIU256 v
 // Update the active SpecId (fork rules) for a StateDB-backed instance.
 void revm_set_spec_id(RevmInstanceStateDB* inst, uint8_t spec_id);
 
-// ---------------- batch prefetch ----------------
+const char* revm_last_error_statedb(RevmInstanceStateDB* inst);
 
-typedef struct {
-    FFIAddress address; // account address
-    FFIHash    slot;    // storage slot (32-byte key). If slot is all zero,
-                         // the call is interpreted as an account-only prefetch.
-} FFIBatchKey;
-
-// Preload a list of (address,slot) pairs into REVM's CacheDB so that
-// subsequent execution can serve them from memory without crossing the
-// FFI boundary. This is a best-effort helper; missing keys will simply be
-// fetched lazily later.
 void revm_prefetch_batch(RevmInstanceStateDB* inst,
                          const FFIBatchKey* keys,
                          size_t count);
 
-const char* revm_last_error_statedb(RevmInstanceStateDB* inst);
+// ---------------- snapshots ----------------
+
+// Create a lightweight snapshot (deep clone) of an existing StateDB instance.
+// The caller is responsible for eventually freeing it via
+// `revm_free_statedb_instance`.
+RevmInstanceStateDB* revm_snapshot_clone(RevmInstanceStateDB* parent);
+
+// Merge the child snapshot back into its parent and free the child. Both
+// pointers must originate from `revm_snapshot_clone`.
+void revm_snapshot_commit(RevmInstanceStateDB* parent, RevmInstanceStateDB* child);
 
 #ifdef __cplusplus
 }
