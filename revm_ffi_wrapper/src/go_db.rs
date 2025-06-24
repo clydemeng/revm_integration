@@ -18,9 +18,33 @@ use core::sync::atomic::{AtomicUsize, Ordering};
 use revm::state::Account;
 use std::collections::HashMap;
 use revm::database_interface::DatabaseCommit;
+use once_cell::sync::Lazy;
 
 #[cfg(test)]
 pub static TEST_LAST_HANDLE: AtomicUsize = AtomicUsize::new(0);
+
+// Global miss counters (account & storage) – incremented whenever a look-up
+// crosses the FFI boundary into Go.
+static ACCOUNT_MISSES: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
+static STORAGE_MISSES: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
+
+#[no_mangle]
+pub extern "C" fn revm_reset_miss_counters() {
+    ACCOUNT_MISSES.store(0, Ordering::SeqCst);
+    STORAGE_MISSES.store(0, Ordering::SeqCst);
+}
+
+#[no_mangle]
+pub extern "C" fn revm_get_miss_counters(out_accounts: *mut usize, out_storage: *mut usize) {
+    unsafe {
+        if !out_accounts.is_null() {
+            *out_accounts = ACCOUNT_MISSES.load(Ordering::SeqCst);
+        }
+        if !out_storage.is_null() {
+            *out_storage = STORAGE_MISSES.load(Ordering::SeqCst);
+        }
+    }
+}
 
 /// Type alias for the error we bubble up.  We keep it simple for now – every
 /// failure returns a descriptive string.
@@ -143,11 +167,14 @@ impl DatabaseRef for GoDatabase {
                 GoDatabase::address_to_ffi(address),
                 &mut out_info as *mut _,
             );
-            match ret {
+            let res = match ret {
                 0 => Ok(Some(ffi_account_to_revm(&out_info))),
                 1 => Ok(None), // not found (define convention)
                 _ => Err(GoDBError("re_state_basic failed".into())),
-            }
+            };
+            // Any path that reaches Go implies a cache miss.
+            ACCOUNT_MISSES.fetch_add(1, Ordering::SeqCst);
+            res
         }
     }
 
@@ -191,10 +218,13 @@ impl DatabaseRef for GoDatabase {
                 GoDatabase::u256_to_ffi_hash(index),
                 &mut out as *mut _,
             );
-            if ret != 0 {
-                return Err(GoDBError("re_state_storage failed".into()));
-            }
-            Ok(Self::ffi_u256_to_u256(out))
+            let res = if ret != 0 {
+                Err(GoDBError("re_state_storage failed".into()))
+            } else {
+                Ok(Self::ffi_u256_to_u256(out))
+            };
+            STORAGE_MISSES.fetch_add(1, Ordering::SeqCst);
+            res
         }
     }
 

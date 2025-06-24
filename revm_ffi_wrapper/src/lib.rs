@@ -595,19 +595,16 @@ pub unsafe extern "C" fn revm_view_call_contract(
     }
 }
 
-/// REVM instance backed by an external StateDB provided from Go (or other) side.
-///
-/// This is identical to `RevmInstance` except that its internal database is a
-/// `CacheDB<GoDatabase>` instead of the default in-memory `EmptyDB`.
-#[repr(C)]
+type CachedGoDB = revm::database::CacheDB<GoDatabase>;
+
 pub struct RevmInstanceStateDB {
     pub evm: MainnetEvm<
         revm::Context<
             revm::context::BlockEnv,
             revm::context::TxEnv,
             revm::context::CfgEnv,
-            GoDatabase,
-            revm::Journal<GoDatabase>,
+            CachedGoDB,
+            revm::Journal<CachedGoDB>,
             (),
         >,
     >,
@@ -680,9 +677,12 @@ pub extern "C" fn revm_new_with_statedb(
         cfg_env.limit_contract_code_size = Some(cfg_val.max_code_size as usize);
     }
 
-    // Hook up the external database via `GoDatabase`.
+    // Hook up the external database via `GoDatabase` wrapped in a CacheDB so
+    // that batch-prefetch can populate the cache and subsequent execution can
+    // serve look-ups without crossing the FFI boundary.
     let external_db = GoDatabase::new(handle);
-    let context = Context::new(external_db, spec_id).with_cfg(cfg_env);
+    let cached_db = revm::database::CacheDB::new(external_db);
+    let context = Context::new(cached_db, spec_id).with_cfg(cfg_env);
     let evm = context.build_mainnet();
 
     Box::into_raw(Box::new(RevmInstanceStateDB {
@@ -1052,4 +1052,69 @@ unsafe fn parse_u256(ptr: *const c_char) -> U256 {
     }
     let s = c_str_to_string(ptr).unwrap_or_else(|_| "0x0".to_string());
     hex_to_u256(&s).unwrap_or(U256::ZERO)
+}
+
+// ---------------- batch prefetch (stub impl) ----------------
+
+use crate::statedb_types::{FFIAddress, FFIHash};
+
+#[repr(C)]
+pub struct FFIBatchKey {
+    address: FFIAddress,
+    slot: FFIHash,
+}
+
+/// Best-effort batch prefetch.  Walks the provided (address,slot) list once,
+/// touches each account / storage entry on REVM's database, and thereby
+/// populates the instance-local `CacheDB`.  Subsequent transaction execution
+/// can then serve these look-ups from memory without crossing the CGO
+/// boundary.
+///
+/// * A zeroed `slot` means "account-only" prefetch (no storage).
+/// * Duplicate keys are automatically de-duplicated inside this helper.
+/// * Unknown accounts / slots are silently ignored – we only prime the cache.
+///
+/// Safety: called from Go; must guard against NULL and out-of-bounds inputs –
+/// we return immediately on invalid pointers.
+#[no_mangle]
+pub extern "C" fn revm_prefetch_batch(
+    inst: *mut RevmInstanceStateDB,
+    keys: *const FFIBatchKey,
+    count: libc::size_t,
+) {
+    use std::collections::HashSet;
+    use revm::primitives::{Address, U256};
+
+    if inst.is_null() || keys.is_null() || count == 0 {
+        return;
+    }
+
+    // SAFETY: pointers checked for NULL above; slice bounds derive from count.
+    let slice = unsafe { core::slice::from_raw_parts(keys, count as usize) };
+    let evm = unsafe { &mut (*inst).evm };
+
+    // De-duplicate accounts and storage keys to avoid redundant DB calls.
+    let mut acc_set: HashSet<Address> = HashSet::with_capacity(slice.len());
+    let mut stor_set: HashSet<(Address, U256)> = HashSet::new();
+
+    for k in slice {
+        let addr = Address::from_slice(&k.address.bytes);
+        acc_set.insert(addr);
+
+        // All-zero slot means "account only".
+        if k.slot.bytes.iter().any(|&b| b != 0) {
+            let slot_u256 = U256::from_be_bytes(k.slot.bytes);
+            stor_set.insert((addr, slot_u256));
+        }
+    }
+
+    // Prime CacheDB by issuing `basic` / `storage` calls. Ignore errors – this
+    // is only a performance hint; any miss will be fetched lazily later.
+    for addr in acc_set {
+        let _ = evm.ctx().journal().db().basic(addr);
+    }
+
+    for (addr, slot) in stor_set {
+        let _ = evm.ctx().journal().db().storage(addr, slot);
+    }
 } 

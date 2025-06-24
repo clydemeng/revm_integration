@@ -196,6 +196,22 @@ int re_state_set_storage(size_t handle, FFIAddress addr, FFIHash slot, FFIU256 v
 // Update the active SpecId (fork rules) for a StateDB-backed instance.
 void revm_set_spec_id(RevmInstanceStateDB* inst, uint8_t spec_id);
 
+// ---------------- batch prefetch ----------------
+
+typedef struct {
+    FFIAddress address; // account address
+    FFIHash    slot;    // storage slot (32-byte key). If slot is all zero,
+                         // the call is interpreted as an account-only prefetch.
+} FFIBatchKey;
+
+// Preload a list of (address,slot) pairs into REVM's CacheDB so that
+// subsequent execution can serve them from memory without crossing the
+// FFI boundary. This is a best-effort helper; missing keys will simply be
+// fetched lazily later.
+void revm_prefetch_batch(RevmInstanceStateDB* inst,
+                         const FFIBatchKey* keys,
+                         size_t count);
+
 const char* revm_last_error_statedb(RevmInstanceStateDB* inst);
 
 #ifdef __cplusplus

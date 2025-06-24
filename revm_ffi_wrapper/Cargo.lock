@@ -1697,6 +1697,7 @@ dependencies = [
  "anyhow",
  "hex",
  "libc",
+ "once_cell",
  "revm",
 ]
 
