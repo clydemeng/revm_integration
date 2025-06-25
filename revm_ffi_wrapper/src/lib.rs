@@ -277,16 +277,20 @@ pub unsafe extern "C" fn revm_execute_commit(instance: *mut RevmInstance) -> *mu
     let instance = &mut *instance;
     
     match instance.evm.replay() {
-        Ok(mut result_and_state) => {
-            dbg_println!("[Rust] StateDB replay executed; committing {} account(s)", result_and_state.state.len());
-            instance.evm.ctx().journal().db().commit(result_and_state.state);
+        Ok(result_and_state) => {
+            // Commit the diff into the inner CacheDB (simple EmptyDB backend).
+            instance
+                .evm
+                .ctx()
+                .journal()
+                .db()
+                .commit(result_and_state.state);
 
-            let ffi_result = convert_execution_result(result_and_state.result, None);
-            Box::into_raw(Box::new(ffi_result))
+            Box::into_raw(Box::new(convert_execution_result(result_and_state.result, None)))
         }
         Err(e) => {
-            dbg_eprintln!("[Rust] replay error: {}", e);
-            instance.last_error = Some(e.to_string());
+            dbg_eprintln!("[Rust] evm.replay error: {}", e);
+            instance.last_error = Some(format!("Execution failed: {:?}", e));
             ptr::null_mut()
         }
     }
@@ -595,7 +599,11 @@ pub unsafe extern "C" fn revm_view_call_contract(
     }
 }
 
-type CachedGoDB = revm::database::CacheDB<GoDatabase>;
+// Two-layer cache: the outer layer records writes for the current snapshot
+// while the inner layer keeps the block-wide shared cache populated via
+// prefetch.  `CacheDB::nest()` yields exactly this type.
+type InnerGoDB = revm::database::CacheDB<GoDatabase>;
+type NestedGoDB = revm::database::CacheDB<InnerGoDB>;
 
 pub struct RevmInstanceStateDB {
     pub evm: MainnetEvm<
@@ -603,8 +611,8 @@ pub struct RevmInstanceStateDB {
             revm::context::BlockEnv,
             revm::context::TxEnv,
             revm::context::CfgEnv,
-            CachedGoDB,
-            revm::Journal<CachedGoDB>,
+            NestedGoDB,
+            revm::Journal<NestedGoDB>,
             (),
         >,
     >,
@@ -677,12 +685,12 @@ pub extern "C" fn revm_new_with_statedb(
         cfg_env.limit_contract_code_size = Some(cfg_val.max_code_size as usize);
     }
 
-    // Hook up the external database via `GoDatabase` wrapped in a CacheDB so
-    // that batch-prefetch can populate the cache and subsequent execution can
-    // serve look-ups without crossing the FFI boundary.
+    // Build two-layer cache: GoDatabase → CacheDB (block) → nested CacheDB (tx snapshot).
     let external_db = GoDatabase::new(handle);
-    let cached_db = revm::database::CacheDB::new(external_db);
-    let context = Context::new(cached_db, spec_id).with_cfg(cfg_env);
+    let inner_db: InnerGoDB = revm::database::CacheDB::new(external_db);
+    let nested_db: NestedGoDB = inner_db.nest();
+
+    let context = Context::new(nested_db, spec_id).with_cfg(cfg_env);
     let evm = context.build_mainnet();
 
     Box::into_raw(Box::new(RevmInstanceStateDB {
@@ -829,7 +837,22 @@ pub unsafe extern "C" fn revm_call_contract_statedb_commit(
 
     let mut evm = &mut instance.evm;
 
-    // Populate TxEnv through the new safe modifier helpers
+    // -----------------------------------------------------------------
+    // Determine the correct sender nonce so that REVM state transition
+    // validates and subsequently bumps it. We fetch the current on-chain
+    // account info from the backing database. If the account does not yet
+    // exist we start from zero – this matches legacy Go-EVM behaviour.
+    // -----------------------------------------------------------------
+    let current_nonce: u64 = match evm.ctx().journal().db().basic(from_addr) {
+        Ok(opt) => opt.map(|acc| acc.nonce).unwrap_or(0),
+        Err(e) => {
+            instance.last_error = Some(e.to_string());
+            return ptr::null_mut();
+        }
+    };
+
+    // Populate TxEnv through the new safe modifier helpers, including the
+    // discovered nonce so that the handler increments it on success.
     evm.ctx().modify_tx(|tx| {
         tx.caller = from_addr;
         tx.kind = if to_addr.is_zero() {
@@ -841,19 +864,48 @@ pub unsafe extern "C" fn revm_call_contract_statedb_commit(
         tx.value = value_u256;
         tx.gas_limit = gas_limit;
         tx.gas_price = 1_000_000_000u128; // 1 gwei
+        tx.nonce = current_nonce;
     });
 
-    // Note: this takes ownership and is what actually moves the state forward.
-    match evm.replay_commit() {
-        Ok(result) => {
-            Box::into_raw(Box::new(convert_execution_result(result, None)))
+    let exec_res = match evm.replay() {
+        Ok(mut result_and_state) => {
+            // Commit the precise diff returned by REVM into both cache layers
+            // and directly into Go's StateDB.
+            {
+                // Ensure the caller's nonce increment is included even if the
+                // underlying handler fails to mark it as a diff. We bump it
+                // by one relative to the nonce we observed prior to execution.
+                use revm::state::Account;
+                use revm::primitives::HashMap as RevHashMap;
+
+                let mut state_diff: RevHashMap<revm::primitives::Address, Account> = result_and_state.state.clone();
+
+                state_diff.entry(from_addr).and_modify(|acc| {
+                    acc.info.nonce = current_nonce.saturating_add(1);
+                }).or_insert_with(|| {
+                    let mut acc = Account::default();
+                    acc.info.nonce = current_nonce.saturating_add(1);
+                    acc.status = revm::state::AccountStatus::Touched;
+                    acc
+                });
+
+                let parent_db: &mut NestedGoDB = evm.ctx().journal().db();
+                parent_db.commit(state_diff.clone());            // outer-cache merge
+                parent_db.db.db.commit(state_diff.clone());       // Go StateDB
+            }
+
+            // Keep nested caches consistent.
+            propagate_cached_changes(evm.ctx().journal().db());
+
+            Box::into_raw(Box::new(convert_execution_result(result_and_state.result, None)))
         }
         Err(e) => {
-            dbg_eprintln!("[Rust] evm.replay_commit error: {}", e);
+            dbg_eprintln!("[Rust] evm.replay error: {}", e);
             instance.last_error = Some(format!("Execution failed: {:?}", e));
             ptr::null_mut()
         }
-    }
+    };
+    exec_res
 }
 
 /// Update the spec-id (hard-fork rules) of an existing REVM instance that is
@@ -1136,16 +1188,26 @@ pub unsafe extern "C" fn revm_snapshot_clone(
         return std::ptr::null_mut();
     }
 
-    // SAFETY: caller guarantees `parent` is a valid pointer obtained from
-    // `revm_new_with_statedb` or a previous snapshot.
-    let parent_ref = &*parent;
+    let parent_mut = &mut *parent;
 
-    let new_instance = RevmInstanceStateDB {
-        evm: parent_ref.evm.clone(),
+    // Parent DB layout: OuterCache<Block> (NestedGoDB) holding an Inner
+    // CacheDB<Block> which itself wraps GoDatabase. For snapshot we want a
+    // fresh outer layer over a *clone* of the shared inner cache so that all
+    // prefetched data stays hot.
+    let parent_db: &mut NestedGoDB = parent_mut.evm.journal().db();
+    // Flatten parent to merge its outer cache into the shared inner cache so
+    // prefetched accounts are visible in snapshots.
+    let base_inner: InnerGoDB = parent_db.clone().flatten();
+    let child_db: NestedGoDB = base_inner.nest();
+
+    // Recreate context with the nested DB while cloning other env data.
+    let child_ctx = parent_mut.evm.ctx().clone().with_db(child_db);
+    let child_evm = child_ctx.build_mainnet();
+
+    Box::into_raw(Box::new(RevmInstanceStateDB {
+        evm: child_evm,
         last_error: None,
-    };
-
-    Box::into_raw(Box::new(new_instance))
+    }))
 }
 
 /// Commit the changes from a snapshot back into its parent instance and free
@@ -1165,31 +1227,120 @@ pub unsafe extern "C" fn revm_snapshot_commit(
     // Take ownership of the child so we can safely drop it later.
     let mut child_box = Box::from_raw(child);
 
-    use revm::database::CacheDB;
+    // Access parent's database now; we will access the child's DB later, after
+    // we have extracted the journal diff to avoid overlapping mutable borrows.
+    let parent_db: &mut NestedGoDB = (*parent_ref.evm).journal().db();
 
-    // Access underlying databases (CacheDB<GoDatabase>) for both instances.
-    let parent_db: &mut CacheDB<go_db::GoDatabase> = (*parent_ref.evm)
-        .journal()
-        .db();
+    // -------------------------------------------------------------------
+    // 1. Extract the *exact* state diff recorded by the child's journal.
+    //    This captures every account/storage change, even those that do not
+    //    leave a trace in CacheDB (e.g. SSTORE-to-zero, selfdestruct).
+    // -------------------------------------------------------------------
+    let state_diff = {
+        let journal = child_box.evm.ctx().journal();
+        journal.finalize().state
+    };
 
-    let child_db: &mut CacheDB<go_db::GoDatabase> = (*child_box.evm)
-        .journal()
-        .db();
+    // -------------------------------------------------------------------
+    // 2. Merge the diff into both layers:
+    //    a) Parent outer cache – so subsequent REVM reads see the update.
+    //    b) GoDatabase – so Go-StateDB (trie) is updated immediately.
+    // -------------------------------------------------------------------
+    parent_db.commit(state_diff.clone());        // outer-cache merge
+    parent_db.db.db.commit(state_diff.clone());       // Go StateDB
 
-    // Merge accounts (overwrite with child's view where present).
-    for (addr, acc) in child_db.cache.accounts.drain() {
-        parent_db.cache.accounts.insert(addr, acc);
-    }
-    // Merge contracts (bytecode by hash).
-    for (hash, code) in child_db.cache.contracts.drain() {
-        parent_db.cache.contracts.insert(hash, code);
-    }
-    // Append logs.
-    parent_db.cache.logs.extend(child_db.cache.logs.drain(..));
-    // Merge block hashes.
-    for (num, h) in child_db.cache.block_hashes.drain() {
-        parent_db.cache.block_hashes.insert(num, h);
-    }
+    // -------------------------------------------------------------------
+    // 3. Now fold the child's outer CacheDB into its inner cache and install
+    //    that inner cache as the new shared base inside the parent.
+    // -------------------------------------------------------------------
+    // Now safe to access child's DB.
+    let child_db: &mut NestedGoDB = (*child_box.evm).journal().db();
+
+    use std::mem::replace;
+    let moved_child: NestedGoDB = replace(child_db, parent_db.db.clone().nest());
+    let flattened_inner: InnerGoDB = moved_child.flatten();
+    parent_db.db = flattened_inner;
+
+    // 4. (Optional) keep caches consistent for other layers.
+    propagate_cached_changes(parent_db);
 
     // Child is automatically dropped here freeing memory.
+}
+
+/// Clear both outer (tx-snapshot) and inner (block-wide) CacheDB layers so subsequent
+/// look-ups observe the authoritative Go StateDB. This should be invoked after the
+/// pending journal has been flushed at the end of every transaction or whenever
+/// external code mutates the underlying StateDB outside of REVM (e.g. miner reward
+/// application in `engine.Finalize`).
+#[no_mangle]
+pub extern "C" fn revm_clear_caches_statedb(instance: *mut RevmInstanceStateDB) {
+    use std::mem::take;
+
+    if instance.is_null() {
+        return;
+    }
+
+    // Safety: the caller guarantees the pointer is valid for the lifetime of the call.
+    let inst = unsafe { &mut *instance };
+
+    // Wipe both cache layers in-place. We intentionally keep the structs allocated –
+    // only the collections storing cached objects are cleared.
+    inst.evm.ctx().modify_db(|nested_db| {
+        // Helper to reset a single Cache instance.
+        fn clear_cache(cache: &mut revm::database::in_memory_db::Cache) {
+            cache.accounts.clear();
+            cache.contracts.clear();
+            cache.logs.clear();
+            cache.block_hashes.clear();
+        }
+
+        // Clear outer (tx) cache
+        clear_cache(&mut nested_db.cache);
+        // Clear inner (block) cache
+        clear_cache(&mut nested_db.db.cache);
+    });
+}
+
+// Helper that walks over a NestedGoDB and forwards any touched accounts / storage
+// to the Go StateDB via GoDatabase.commit. Used after both snapshot commits and
+// direct replay_commit calls.
+fn propagate_cached_changes(outer_db: &mut NestedGoDB) {
+    use revm::{state::{Account, EvmStorageSlot, AccountStatus}, primitives::{HashMap as RevHashMap, StorageValue}};
+
+    // Build iterator over both outer and inner cache layers so we capture
+    // direct replay_commit (inner layer) as well as snapshot commits (outer layer).
+    let total_accs = outer_db.cache.accounts.len() + outer_db.db.cache.accounts.len();
+    if total_accs == 0 {
+        return;
+    }
+
+    let mut changes: RevHashMap<revm::primitives::Address, Account> = RevHashMap::with_capacity(total_accs);
+
+    for (addr, db_acc) in outer_db.cache.accounts.iter().chain(outer_db.db.cache.accounts.iter()) {
+        let mut storage_map = RevHashMap::new();
+        for (slot, val) in &db_acc.storage {
+            eprintln!("[propagate]   slot={:#x} val={:#x}", slot, val);
+            storage_map.insert(*slot, EvmStorageSlot {
+                original_value: StorageValue::ZERO,
+                present_value: *val,
+                is_cold: false,
+            });
+        }
+
+        eprintln!("[propagate] ACC 0x{:x} nonce={} bal={:#x} storage_slots={} ", addr, db_acc.info.nonce, db_acc.info.balance, db_acc.storage.len());
+
+        let account = Account {
+            info: db_acc.info.clone(),
+            storage: storage_map,
+            status: AccountStatus::Touched,
+        };
+        changes.insert(*addr, account);
+    }
+
+    if !changes.is_empty() {
+        eprintln!("[Rust] propagate_cached_changes: pushing {} accounts", changes.len());
+        outer_db.db.commit(changes);
+    }
+
+    eprintln!("[Rust] propagate_cached_changes end");
 } 

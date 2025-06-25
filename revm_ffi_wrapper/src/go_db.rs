@@ -306,7 +306,7 @@ impl DatabaseCommit for GoDatabase {
 
             // storage
             for (slot, value) in account.changed_storage_slots() {
-                dbg_println!(
+                eprintln!(
                     "[Rust] COMMIT_STORAGE addr=0x{:x} slot={:#x} value={:#x}",
                     addr,
                     slot,

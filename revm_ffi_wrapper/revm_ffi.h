@@ -170,6 +170,9 @@ ExecutionResultFFI* revm_call_contract_statedb_commit(
     const char* value,
     uint64_t gas_limit);
 
+// Clear in-memory cache layers so that future look-ups hit the refreshed Go StateDB.
+void revm_clear_caches_statedb(RevmInstanceStateDB* instance);
+
 // ---------------- types for StateDB bridge ----------------
 typedef struct {
     uint8_t bytes[20];
