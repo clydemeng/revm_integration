@@ -1294,10 +1294,11 @@ pub extern "C" fn revm_clear_caches_statedb(instance: *mut RevmInstanceStateDB) 
             cache.block_hashes.clear();
         }
 
-        // Clear outer (tx) cache
+        // Clear ONLY the outer (tx-snapshot) cache. The block-wide inner
+        // cache is retained so that subsequent transactions can still serve
+        // hot reads from RAM, avoiding CGO round-trips. It already contains
+        // the freshly committed diffs, so it is safe to keep.
         clear_cache(&mut nested_db.cache);
-        // Clear inner (block) cache
-        clear_cache(&mut nested_db.db.cache);
     });
 }
 
