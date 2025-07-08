@@ -1,10 +1,10 @@
 use revm::{
     primitives::{address, Address, Bytes, TxKind, U256, hex},
-    Context, MainBuilder, MainContext, ExecuteEvm,
+    Context, MainBuilder, MainContext, ExecuteCommitEvm,
     context::{TxEnv, ContextTr},
     context_interface::JournalTr,
     handler::{MainnetEvm, MainnetContext},
-    database_interface::EmptyDB,
+    database,
     bytecode::Bytecode,
 };
 use std::fs;
@@ -19,7 +19,7 @@ const BATCH_TRANSFER_SELECTOR: [u8; 4] = [0x1b, 0xc9, 0x2c, 0xf4]; // batchTrans
 const ALICE: Address = address!("1000000000000000000000000000000000000001");
 const BIGA_CONTRACT: Address = address!("2000000000000000000000000000000000000001");
 
-type MyEvm = MainnetEvm<MainnetContext<EmptyDB>>;
+type MyEvm = MainnetEvm<MainnetContext<database::InMemoryDB>>;
 
 fn main() {
     println!("🚀 Pure REVM Benchmark - BIGA Token Batch Transfers");
@@ -28,7 +28,9 @@ fn main() {
     let biga_bytecode = load_bytecode("../bytecode/BIGA.bin");
     
     // Initialize EVM
-    let mut evm = Context::mainnet().build_mainnet();
+    let mut evm = Context::mainnet()
+        .with_db(database::InMemoryDB::default())
+        .build_mainnet();
     let mut alice_nonce = 0u64;
     
     // Deploy BIGA contract
@@ -96,7 +98,7 @@ fn deploy_contract(evm: &mut MyEvm, contract_address: Address, bytecode: &Bytes,
         ..Default::default()
     };
 
-    let result = evm.transact(tx).unwrap();
+    let result = evm.transact_commit(tx).unwrap();
     if !result.is_success() {
         panic!("Contract deployment failed: {:?}", result);
     }
@@ -125,7 +127,7 @@ fn mint_tokens(evm: &mut MyEvm, to: Address, amount: U256, alice_nonce: &mut u64
         ..Default::default()
     };
 
-    let result = evm.transact(tx).unwrap();
+    let result = evm.transact_commit(tx).unwrap();
     if !result.is_success() {
         panic!("Mint failed: {:?}", result);
     }
@@ -149,7 +151,7 @@ fn get_token_balance(evm: &mut MyEvm, account: Address, alice_nonce: &mut u64) -
         ..Default::default()
     };
 
-    let result = evm.transact(tx).unwrap();
+    let result = evm.transact_commit(tx).unwrap();
     if !result.is_success() {
         panic!("Balance query failed: {:?}", result);
     }
@@ -185,7 +187,7 @@ fn perform_batch_transfers(evm: &mut MyEvm, num_transfers: u64, alice_nonce: &mu
     };
 
     let start_time = Instant::now();
-    let result = evm.transact(tx).unwrap();
+    let result = evm.transact_commit(tx).unwrap();
     let duration = start_time.elapsed();
 
     if !result.is_success() {
